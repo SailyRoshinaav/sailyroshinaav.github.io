@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Saily Roshina Ayu Vidiana — Data Analyst</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg:#050810; --bg2:#080d1a; --bg3:#0d1526;
+  --border:rgba(99,210,255,0.12); --border2:rgba(99,210,255,0.25);
+  --cyan:#63d2ff; --violet:#b57bff; --green:#39ff8f;
+  --text:#e8edf5; --muted:#7a8ba8;
+  --mono:'Space Mono',monospace; --sans:'Space Grotesk',sans-serif;
+}
+html { scroll-behavior: smooth; }
+body { background:var(--bg); color:var(--text); font-family:var(--sans); font-size:16px; line-height:1.7; overflow-x:hidden; }
+body::before { content:''; position:fixed; inset:0; background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.04) 2px,rgba(0,0,0,0.04) 4px); pointer-events:none; z-index:999; }
+.grid-bg { position:fixed; inset:0; background-image:linear-gradient(rgba(99,210,255,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(99,210,255,0.04) 1px,transparent 1px); background-size:60px 60px; z-index:0; pointer-events:none; }
+.grid-bg::after { content:''; position:absolute; inset:0; background:radial-gradient(ellipse 70% 60% at 50% 0%,rgba(99,210,255,0.07) 0%,transparent 70%); }
+.orb { position:fixed; border-radius:50%; filter:blur(80px); pointer-events:none; z-index:0; opacity:0.12; }
+.orb-1 { width:500px; height:500px; background:var(--cyan); top:-200px; left:-100px; }
+.orb-2 { width:400px; height:400px; background:var(--violet); bottom:-150px; right:-100px; }
+
+/* NAV */
+nav { position:fixed; top:0; left:0; right:0; display:flex; align-items:center; justify-content:space-between; padding:1.2rem clamp(1.5rem,5vw,5rem); background:rgba(5,8,16,0.85); backdrop-filter:blur(16px); border-bottom:1px solid var(--border); z-index:100; gap:1rem; }
+.nav-logo { font-family:var(--mono); font-size:0.8rem; color:var(--cyan); text-decoration:none; letter-spacing:0.1em; display:flex; align-items:center; gap:0.6rem; flex-shrink:0; }
+.nav-logo::before { content:''; display:inline-block; width:8px; height:8px; background:var(--cyan); border-radius:50%; box-shadow:0 0 8px var(--cyan),0 0 20px var(--cyan); animation:blink 2s ease-in-out infinite; }
+.nav-links { display:flex; gap:2rem; list-style:none; }
+.nav-links a { font-family:var(--mono); font-size:0.7rem; letter-spacing:0.12em; text-transform:uppercase; color:var(--muted); text-decoration:none; transition:color 0.2s; position:relative; }
+.nav-links a::after { content:''; position:absolute; bottom:-3px; left:0; right:0; height:1px; background:var(--cyan); transform:scaleX(0); transition:transform 0.25s; }
+.nav-links a:hover { color:var(--cyan); }
+.nav-links a:hover::after { transform:scaleX(1); }
+.nav-right { display:flex; align-items:center; gap:1rem; flex-shrink:0; }
+.nav-status { display:flex; align-items:center; gap:0.5rem; font-family:var(--mono); font-size:0.65rem; color:var(--green); letter-spacing:0.08em; }
+.status-dot { width:6px; height:6px; background:var(--green); border-radius:50%; box-shadow:0 0 6px var(--green); animation:blink 1.5s ease-in-out infinite; }
+.lang-toggle { display:flex; align-items:center; background:var(--bg3); border:1px solid var(--border2); border-radius:2px; overflow:hidden; flex-shrink:0; }
+.lang-btn { font-family:var(--mono); font-size:0.62rem; font-weight:700; letter-spacing:0.1em; padding:0.3rem 0.75rem; background:transparent; color:var(--muted); border:none; cursor:pointer; transition:all 0.2s; text-transform:uppercase; }
+.lang-btn.active { background:var(--cyan); color:var(--bg); }
+.lang-btn:not(.active):hover { color:var(--cyan); }
+
+/* HERO */
+#hero { min-height:100vh; display:flex; flex-direction:column; justify-content:center; padding:8rem clamp(1.5rem,5vw,5rem) 5rem; position:relative; z-index:1; }
+.hero-eyebrow { font-family:var(--mono); font-size:0.72rem; color:var(--cyan); letter-spacing:0.18em; text-transform:uppercase; margin-bottom:2rem; display:flex; align-items:center; gap:1rem; animation:fadeUp 0.7s ease both; }
+.hero-eyebrow::before { content:'> '; opacity:0.5; }
+.hero-name { font-size:clamp(2.5rem,7vw,6rem); font-weight:700; line-height:0.95; letter-spacing:-0.03em; margin-bottom:1.5rem; animation:fadeUp 0.7s 0.1s ease both; }
+.hero-name .highlight { color:transparent; -webkit-text-stroke:1px var(--cyan); position:relative; display:inline-block; }
+.hero-name .highlight::after { content:attr(data-text); position:absolute; inset:0; color:var(--cyan); clip-path:inset(0 100% 0 0); animation:glitch-reveal 1.2s 0.5s cubic-bezier(0.77,0,0.18,1) forwards; filter:blur(0.5px); }
+.hero-desc { max-width:520px; color:var(--muted); font-size:1.05rem; line-height:1.75; margin-bottom:3rem; animation:fadeUp 0.7s 0.2s ease both; }
+.hero-desc strong { color:var(--text); font-weight:500; }
+.hero-tags { display:flex; flex-wrap:wrap; gap:0.6rem; margin-bottom:2.5rem; animation:fadeUp 0.7s 0.3s ease both; }
+.tag { font-family:var(--mono); font-size:0.68rem; color:var(--cyan); border:1px solid var(--border2); padding:0.35rem 0.9rem; border-radius:2px; letter-spacing:0.08em; background:rgba(99,210,255,0.04); transition:all 0.2s; }
+.tag:hover { background:rgba(99,210,255,0.1); box-shadow:0 0 12px rgba(99,210,255,0.15); }
+.hero-cta { display:flex; gap:1rem; flex-wrap:wrap; animation:fadeUp 0.7s 0.4s ease both; }
+.btn { display:inline-flex; align-items:center; gap:0.6rem; padding:0.85rem 1.8rem; font-family:var(--mono); font-size:0.75rem; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; text-decoration:none; border:none; cursor:pointer; transition:all 0.25s; clip-path:polygon(8px 0%,100% 0%,calc(100% - 8px) 100%,0% 100%); }
+.btn-primary { background:var(--cyan); color:var(--bg); }
+.btn-primary:hover { box-shadow:0 0 30px rgba(99,210,255,0.5); transform:translateY(-2px); }
+.btn-ghost { background:transparent; color:var(--cyan); border:1px solid var(--border2); }
+.btn-ghost:hover { background:rgba(99,210,255,0.06); border-color:var(--cyan); box-shadow:0 0 20px rgba(99,210,255,0.12); transform:translateY(-2px); }
+
+/* TICKER */
+.ticker-wrap { border-top:1px solid var(--border); border-bottom:1px solid var(--border); overflow:hidden; padding:0.65rem 0; position:relative; z-index:1; }
+.ticker-track { display:flex; gap:3rem; animation:ticker 22s linear infinite; white-space:nowrap; }
+.ticker-item { font-family:var(--mono); font-size:0.65rem; color:var(--muted); letter-spacing:0.1em; text-transform:uppercase; flex-shrink:0; display:flex; align-items:center; gap:0.75rem; }
+.ticker-item::before { content:'◆'; font-size:0.4rem; color:var(--cyan); }
+
+/* WRAPPER */
+.wrapper { max-width:1000px; margin:0 auto; padding:6rem clamp(1.5rem,5vw,5rem); position:relative; z-index:1; }
+.sec-label { font-family:var(--mono); font-size:0.65rem; color:var(--cyan); letter-spacing:0.2em; text-transform:uppercase; margin-bottom:0.5rem; opacity:0.8; }
+.sec-title { font-size:clamp(1.8rem,4vw,3rem); font-weight:700; letter-spacing:-0.02em; line-height:1.1; margin-bottom:1rem; }
+.sec-sub { color:var(--muted); font-size:0.95rem; max-width:520px; margin-bottom:3.5rem; }
+
+/* ABOUT */
+#about { border-top:1px solid var(--border); }
+.about-grid { display:grid; grid-template-columns:1fr 1fr; gap:4rem; align-items:start; margin-bottom:4rem; }
+.about-photo-col { display:flex; flex-direction:column; align-items:center; gap:1.5rem; }
+.about-photo-frame { position:relative; width:100%; max-width:280px; }
+.about-photo-frame::before { content:''; position:absolute; inset:-1px; background:linear-gradient(135deg,var(--cyan),transparent 60%,var(--violet)); border-radius:4px; z-index:0; }
+.about-photo-frame::after { content:''; position:absolute; top:10px; left:10px; right:-10px; bottom:-10px; border:1px solid var(--border2); border-radius:4px; z-index:-1; }
+.about-photo { position:relative; width:100%; aspect-ratio:3/4; object-fit:cover; display:block; border-radius:3px; z-index:1; filter:grayscale(15%); }
+.about-photo-placeholder { position:relative; width:100%; aspect-ratio:3/4; background:var(--bg3); border-radius:3px; z-index:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:0.75rem; border:1px dashed var(--border2); }
+.about-photo-placeholder svg { opacity:0.2; }
+.about-photo-placeholder span { font-family:var(--mono); font-size:0.6rem; color:var(--muted); letter-spacing:0.1em; text-transform:uppercase; opacity:0.45; text-align:center; padding:0 1rem; line-height:1.6; }
+.about-text-col { display:flex; flex-direction:column; gap:1rem; }
+.about-bio { color:var(--muted); font-size:0.95rem; line-height:1.8; }
+.about-bio strong { color:var(--text); font-weight:500; }
+.resume-btn { margin-top:1rem; display:inline-flex; align-items:center; gap:0.6rem; padding:0.75rem 1.5rem; font-family:var(--mono); font-size:0.7rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; text-decoration:none; background:transparent; color:var(--cyan); border:1px solid var(--border2); transition:all 0.25s; clip-path:polygon(6px 0%,100% 0%,calc(100% - 6px) 100%,0% 100%); align-self:flex-start; }
+.resume-btn:hover { background:rgba(99,210,255,0.06); border-color:var(--cyan); box-shadow:0 0 20px rgba(99,210,255,0.12); transform:translateY(-2px); }
+
+/* EDU & EXP */
+.edu-exp-grid { display:grid; grid-template-columns:1fr 1fr; gap:2rem; }
+.card-section-title { font-family:var(--mono); font-size:0.62rem; color:var(--cyan); letter-spacing:0.18em; text-transform:uppercase; margin-bottom:1.25rem; opacity:0.8; display:flex; align-items:center; gap:0.6rem; }
+.card-section-title::after { content:''; flex:1; height:1px; background:var(--border); }
+.edu-card { background:var(--bg2); border:1px solid var(--border); padding:1.5rem; display:flex; gap:1.25rem; align-items:flex-start; }
+.edu-logo { width:44px; height:44px; object-fit:contain; flex-shrink:0; filter:brightness(0.85); border-radius:4px; background:white; padding:4px; }
+.edu-info {}
+.edu-school { font-size:0.88rem; font-weight:600; margin-bottom:0.15rem; }
+.edu-prodi { font-size:0.8rem; color:var(--muted); margin-bottom:0.15rem; }
+.edu-detail { font-family:var(--mono); font-size:0.65rem; color:var(--cyan); letter-spacing:0.06em; }
+.exp-list { display:flex; flex-direction:column; gap:1rem; }
+.exp-card { background:var(--bg2); border:1px solid var(--border); padding:1.25rem 1.5rem; display:flex; gap:1.25rem; align-items:flex-start; transition:border-color 0.2s; }
+.exp-card:hover { border-color:var(--border2); }
+.exp-logos { display:flex; gap:6px; flex-shrink:0; align-items:center; flex-wrap:wrap; max-width:70px; }
+.exp-logo { height:28px; width:auto; max-width:60px; object-fit:contain; filter:brightness(0.85) grayscale(20%); }
+.exp-info {}
+.exp-org { font-size:0.82rem; font-weight:600; margin-bottom:0.15rem; line-height:1.4; }
+.exp-role { font-size:0.78rem; color:var(--muted); margin-bottom:0.1rem; }
+.exp-period { font-family:var(--mono); font-size:0.62rem; color:var(--cyan); letter-spacing:0.06em; opacity:0.8; }
+
+/* CASE STUDIES */
+#work { border-top:1px solid var(--border); }
+.case-grid { display:flex; flex-direction:column; gap:1.5px; background:var(--border); border:1px solid var(--border); }
+.case-card { display:grid; grid-template-columns:1fr auto; gap:2rem; align-items:start; padding:2.5rem; background:var(--bg); text-decoration:none; color:inherit; transition:background 0.25s; position:relative; overflow:hidden; }
+.case-card::before { content:''; position:absolute; left:0; top:0; bottom:0; width:2px; background:var(--cyan); transform:scaleY(0); transform-origin:top; transition:transform 0.3s ease; }
+.case-card:hover { background:var(--bg3); }
+.case-card:hover::before { transform:scaleY(1); }
+.case-role { font-family:var(--mono); font-size:0.62rem; color:var(--violet); letter-spacing:0.15em; text-transform:uppercase; margin-bottom:0.6rem; }
+.case-title { font-size:1.35rem; font-weight:600; margin-bottom:0.75rem; letter-spacing:-0.01em; transition:color 0.2s; }
+.case-card:hover .case-title { color:var(--cyan); }
+.case-desc { color:var(--muted); font-size:0.88rem; line-height:1.7; max-width:520px; margin-bottom:1.5rem; }
+.case-pills { display:flex; flex-wrap:wrap; gap:0.4rem; }
+.pill { font-family:var(--mono); font-size:0.6rem; color:var(--muted); border:1px solid var(--border); padding:0.2rem 0.65rem; letter-spacing:0.06em; border-radius:2px; transition:all 0.2s; }
+.case-card:hover .pill { border-color:rgba(99,210,255,0.25); color:var(--cyan); }
+.case-stats { display:flex; flex-direction:column; gap:1rem; min-width:160px; text-align:right; }
+.case-stat-val { font-family:var(--mono); font-size:1.5rem; font-weight:700; color:var(--cyan); line-height:1; text-shadow:0 0 20px rgba(99,210,255,0.3); }
+.case-stat-label { font-size:0.72rem; color:var(--muted); line-height:1.4; }
+.case-arrow { font-size:1.2rem; color:var(--muted); margin-top:0.25rem; transition:all 0.25s; }
+.case-card:hover .case-arrow { color:var(--cyan); transform:translateX(4px); }
+.case-card.featured { background:var(--bg2); }
+
+/* APPROACH */
+#approach { border-top:1px solid var(--border); }
+
+/* FIX: 5 cards → 3 columns on desktop, wraps to 2+1 or 2+3 naturally.
+   Use a fixed 3-col grid so cards never stretch awkwardly alone. */
+.how-grid {
+  display:grid;
+  grid-template-columns:repeat(3, 1fr);
+  gap:1.5px;
+  background:var(--border);
+  border:1px solid var(--border);
+}
+/* Card 4 and 5 span differently to center-align the bottom row of 2 */
+.how-card:nth-child(4) { grid-column: 1 / 2; }
+.how-card:nth-child(5) { grid-column: 2 / 3; }
+
+.how-card { background:var(--bg); padding:2rem; transition:background 0.25s; }
+.how-card:hover { background:var(--bg3); }
+.how-num { font-family:var(--mono); font-size:0.6rem; color:var(--cyan); letter-spacing:0.2em; margin-bottom:1rem; opacity:0.6; }
+.how-icon { font-size:1.4rem; margin-bottom:0.6rem; display:block; }
+.how-title { font-size:0.95rem; font-weight:600; margin-bottom:0.4rem; letter-spacing:-0.01em; }
+.how-desc { font-size:0.82rem; color:var(--muted); line-height:1.65; }
+
+.props-grid { display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-top:2rem; }
+.prop-row { display:flex; align-items:flex-start; gap:0.75rem; font-size:0.88rem; color:var(--muted); padding:1rem 1.25rem; border:1px solid var(--border); background:var(--bg2); line-height:1.5; }
+.prop-row::before { content:'✓'; font-family:var(--mono); font-size:0.75rem; color:var(--green); flex-shrink:0; margin-top:0.05em; }
+
+/* CONTACT */
+#contact { border-top:1px solid var(--border); text-align:center; }
+#contact .sec-sub { margin:0 auto 2.5rem; }
+.contact-links { display:flex; justify-content:center; gap:1rem; flex-wrap:wrap; margin-bottom:1.5rem; }
+.social-link { display:inline-flex; align-items:center; gap:0.5rem; font-family:var(--mono); font-size:0.72rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--muted); text-decoration:none; padding:0.65rem 1.2rem; border:1px solid var(--border); transition:all 0.25s; }
+.social-link:hover { color:var(--cyan); border-color:var(--cyan); box-shadow:0 0 20px rgba(99,210,255,0.1),inset 0 0 20px rgba(99,210,255,0.03); }
+.contact-closing { font-family:var(--mono); font-size:0.7rem; color:var(--muted); letter-spacing:0.12em; opacity:0.6; margin-top:0.5rem; }
+
+/* FOOTER */
+footer { border-top:1px solid var(--border); padding:1.5rem clamp(1.5rem,5vw,5rem); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; position:relative; z-index:1; }
+.footer-copy { font-family:var(--mono); font-size:0.65rem; color:var(--muted); letter-spacing:0.08em; }
+.footer-back { font-family:var(--mono); font-size:0.65rem; color:var(--muted); text-decoration:none; letter-spacing:0.08em; transition:color 0.2s; }
+.footer-back:hover { color:var(--cyan); }
+
+[data-id] { transition:opacity 0.2s ease; }
+body.lang-switching [data-id] { opacity:0; }
+
+@keyframes fadeUp { from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)} }
+@keyframes blink { 0%,100%{opacity:1}50%{opacity:0} }
+@keyframes glitch-reveal { to{clip-path:inset(0 0% 0 0)} }
+@keyframes ticker { from{transform:translateX(0)}to{transform:translateX(-50%)} }
+
+@media (max-width:768px) {
+  .nav-links { display:none; }
+  .nav-status { display:none; }
+  .about-grid { grid-template-columns:1fr; gap:2rem; }
+  .about-photo-col { align-items:flex-start; }
+  .edu-exp-grid { grid-template-columns:1fr; }
+  .how-grid { grid-template-columns:1fr; }
+  .how-card:nth-child(4), .how-card:nth-child(5) { grid-column:auto; }
+  .case-card { grid-template-columns:1fr; }
+  .case-stats { text-align:left; flex-direction:row; flex-wrap:wrap; }
+  .props-grid { grid-template-columns:1fr; }
+}
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="nav-logo">SAILY.io</a>
+  <ul class="nav-links">
+    <li><a href="#about" data-id="nav-about">About</a></li>
+    <li><a href="#work" data-id="nav-projects">Projects</a></li>
+    <li><a href="#approach" data-id="nav-approach">Approach</a></li>
+    <li><a href="#contact" data-id="nav-contact">Contact</a></li>
+  </ul>
+  <div class="nav-right">
+    <div class="nav-status">
+      <div class="status-dot"></div>
+      <span data-id="nav-status">Open to opportunities</span>
+    </div>
+    <div class="lang-toggle" role="group" aria-label="Pilih bahasa">
+      <button class="lang-btn active" data-lang="id" onclick="setLang('id')">ID</button>
+      <button class="lang-btn" data-lang="en" onclick="setLang('en')">EN</button>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <p class="hero-eyebrow" data-id="hero-eyebrow">Sertifikasi Data Analyst (BNSP) · Data Analyst</p>
+  <h1 class="hero-name">
+    Saily<br />
+    <span class="highlight" data-text="Roshina Ayu Vidiana">Roshina Ayu Vidiana</span>
+  </h1>
+  <p class="hero-desc" data-id="hero-desc">Lulusan Statistika yang telah tersertifikasi Data Analyst (BNSP) dengan pengalaman praktik dalam analisis data <strong>end-to-end</strong> — dari pengumpulan data dan cleaning hingga penyampaian insight yang mendorong aksi nyata melalui dashboard dan model.</p>
+  <div class="hero-tags">
+    <span class="tag">Microsoft Excel</span>
+    <span class="tag">Google Sheets</span>
+    <span class="tag">BigQuery</span>
+    <span class="tag">SQL</span>
+    <span class="tag">Looker Studio</span>
+    <span class="tag">Tableau</span>
+    <span class="tag">Python</span>
+    <span class="tag">RStudio</span>
+    <span class="tag" data-id="tag-stat">Statistik Inferensial</span>
+    <span class="tag">Machine Learning</span>
+  </div>
+  <div class="hero-cta">
+    <a href="#work" class="btn btn-primary" data-id="btn-portfolio">Lihat Case Studies</a>
+    <a href="#contact" class="btn btn-ghost" data-id="btn-contact">Hubungi Saya</a>
+  </div>
+</section>
+
+<!-- TICKER -->
+<div class="ticker-wrap" aria-hidden="true">
+  <div class="ticker-track">
+    <span class="ticker-item">Exploratory Data Analysis</span>
+    <span class="ticker-item" data-id="tk-viz">Visualisasi Data</span>
+    <span class="ticker-item" data-id="tk-stat">Statistik Inferensial</span>
+    <span class="ticker-item">Machine Learning</span>
+    <span class="ticker-item">Business Intelligence</span>
+    <span class="ticker-item">SQL &amp; Python</span>
+    <span class="ticker-item" data-id="tk-dash">Desain Dashboard</span>
+    <span class="ticker-item" data-id="tk-reg">Regresi &amp; Clustering</span>
+    <span class="ticker-item">Exploratory Data Analysis</span>
+    <span class="ticker-item" data-id="tk-viz2">Visualisasi Data</span>
+    <span class="ticker-item" data-id="tk-stat2">Statistik Inferensial</span>
+    <span class="ticker-item">Machine Learning</span>
+    <span class="ticker-item">Business Intelligence</span>
+    <span class="ticker-item">SQL &amp; Python</span>
+    <span class="ticker-item" data-id="tk-dash2">Desain Dashboard</span>
+    <span class="ticker-item" data-id="tk-reg2">Regresi &amp; Clustering</span>
+  </div>
+</div>
+
+<!-- ABOUT -->
+<section id="about">
+<div class="wrapper">
+  <p class="sec-label" data-id="sec-label-about">// 01 — About</p>
+  <h2 class="sec-title" data-id="sec-title-about">Tentang Saya</h2>
+
+  <div class="about-grid">
+    <div class="about-photo-col">
+      <!--
+        CARA GANTI FOTO:
+        Hapus seluruh div.about-photo-placeholder di bawah ini,
+        lalu ganti dengan:
+        <img src="foto.jpg" alt="Saily Roshina Ayu Vidiana" class="about-photo" />
+        (pastikan file foto ada di folder yang sama dengan index.html)
+      -->
+      <div class="about-photo-frame">
+        <div class="about-photo-placeholder">
+          <svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" color="var(--cyan)">
+            <circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
+          </svg>
+          <span data-id="about-photo-placeholder">Foto saya</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="about-text-col">
+      <p class="about-bio" data-id="about-bio-1">Saya adalah seorang <strong>data enthusiast</strong> dengan dasar yang kuat di bidang statistika dan ketertarikan dalam mengubah data mentah menjadi insight yang dapat digunakan.</p>
+      <p class="about-bio" data-id="about-bio-2">Saya berfokus pada penyampaian <strong>data storytelling yang jelas dan berdampak</strong>, dengan menggabungkan kemampuan analisis dan pemahaman bisnis untuk membantu pengambilan keputusan.</p>
+      <p class="about-bio" data-id="about-bio-3">Sebagai fresh graduate, saya secara aktif mengembangkan kemampuan melalui berbagai studi kasus dan proyek yang merepresentasikan permasalahan nyata di dunia bisnis. Saya terbuka untuk peluang sebagai <strong>Data Analyst</strong>, baik untuk full-time maupun freelance.</p>
+      <!--
+        CARA GANTI LINK RESUME:
+        Ganti href="#" dengan link Google Drive resume kamu.
+        Contoh: href="https://drive.google.com/file/d/XXXX/view"
+        Tambahkan target="_blank" rel="noopener" agar terbuka di tab baru.
+      -->
+      <a href="#" class="resume-btn" data-id="btn-resume">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Download Resume
+      </a>
+    </div>
+  </div>
+
+  <div class="edu-exp-grid">
+    <div>
+      <p class="card-section-title" data-id="edu-label">Education</p>
+      <div class="edu-card">
+        <img src="https://unimus.ac.id/wp-content/uploads/2014/07/logo-unimus-981x1024.png" alt="UNIMUS" class="edu-logo" />
+        <div class="edu-info">
+          <p class="edu-school" data-id="edu-school">Universitas Muhammadiyah Semarang</p>
+          <p class="edu-prodi" data-id="edu-prodi">S1 Statistika</p>
+          <p class="edu-detail">IPK 3.86 / 4.00 &nbsp;·&nbsp; 2021 – 2025</p>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <p class="card-section-title" data-id="exp-label">Experience</p>
+      <div class="exp-list">
+        <div class="exp-card">
+          <div class="exp-logos">
+            <img src="https://i0.wp.com/bcf.or.id/file/uploads/2023/08/bcf_logo_long-1-e1693196438457.png?fit=226%2C100&ssl=1" alt="BCF" class="exp-logo" />
+            <img src="https://www.mentarisehatindonesia.org/wp-content/uploads/2024/05/logo-msi-2-1-scaled-600x207.png" alt="MSI" class="exp-logo" />
+          </div>
+          <div class="exp-info">
+            <p class="exp-org" data-id="exp1-org">Bakrie Center Foundation × Yayasan Mentari Sehat Indonesia</p>
+            <p class="exp-role" data-id="exp1-role">Campus Leaders Program · IT &amp; Database · Semarang</p>
+            <p class="exp-period" data-id="exp1-period">Agustus 2023 – Desember 2023</p>
+          </div>
+        </div>
+        <div class="exp-card">
+          <div class="exp-logos">
+            <img src="https://semarangkota.bps.go.id/_next/image?url=%2Fassets%2Flogo-bps.png&w=3840&q=75" alt="BPS" class="exp-logo" />
+          </div>
+          <div class="exp-info">
+            <p class="exp-org" data-id="exp2-org">Badan Pusat Statistik (BPS) Kota Semarang</p>
+            <p class="exp-role" data-id="exp2-role">Mitra BPS – Petugas Pendataan Lapangan (REGSOSEK 2022)</p>
+            <p class="exp-period" data-id="exp2-period">Oktober 2022 – November 2022</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- PROJECTS -->
+<section id="work">
+<div class="wrapper">
+  <p class="sec-label" data-id="sec-label-projects">// 02 — Projects</p>
+  <h2 class="sec-title" data-id="sec-title-projects">Data nyata.<br />Insight nyata.</h2>
+  <p class="sec-sub" data-id="sec-sub-projects">Case study yang mensimulasikan pekerjaan analitik sesungguhnya — berangkat dari problem bisnis, dianalisis dengan pendekatan data, dan diakhiri dengan rekomendasi yang dapat diimplementasikan.</p>
+
+  <div class="case-grid">
+    <!-- FIX: href diubah ke halaman detail case study, bukan langsung ke Canva -->
+    <a href="portfolio/inventory-control/" class="case-card featured">
+      <div>
+        <p class="case-role" data-id="case1-role">◆ Inventory · Supply Chain · Data Analyst</p>
+        <h3 class="case-title" data-id="case1-title">Inventory Control System Analysis</h3>
+        <p class="case-desc" data-id="case1-desc">Mengidentifikasi risiko operasional dan mencegah kehilangan penjualan (lost sales), mengevaluasi risiko dari perspektif rantai pasok (supply chain), serta memastikan modal tidak tertahan secara tidak efisien. Analisis menghasilkan rekomendasi implementasi sistem stock alert untuk meningkatkan efisiensi inventory, dengan temuan 41,1% SKU berada dalam kategori Critical dan Warning.</p>
+        <div class="case-pills">
+          <span class="pill">Google Sheets</span>
+          <span class="pill">Data Visualization</span>
+          <span class="pill" data-id="case1-pill3">Automated Stock Alert System</span>
+          <span class="pill" data-id="case1-pill4">Inventory Analysis</span>
+          <span class="pill">Supply Chain</span>
+        </div>
+      </div>
+      <div class="case-stats">
+        <div>
+          <div class="case-stat-val">400+</div>
+          <div class="case-stat-label" data-id="case1-stat1">Baris data dianalisis</div>
+        </div>
+        <div>
+          <div class="case-stat-val">41,1%</div>
+          <div class="case-stat-label" data-id="case1-stat2">SKU Critical + Warning</div>
+        </div>
+        <div class="case-arrow">→</div>
+      </div>
+    </a>
+  </div>
+</div>
+</section>
+
+<!-- APPROACH -->
+<section id="approach">
+<div class="wrapper">
+  <p class="sec-label" data-id="sec-label-approach">// 03 — Approach</p>
+  <h2 class="sec-title" data-id="sec-title-approach">How I Work<br />with Data</h2>
+  <p class="sec-sub" data-id="sec-sub-approach">Understand Problem → Prepare Data → Analyze → Communicate Insight</p>
+
+  <div class="how-grid">
+    <div class="how-card">
+      <p class="how-num">01</p>
+      <span class="how-icon">🎯</span>
+      <h3 class="how-title" data-id="how1-title">Mulai dari Permasalahan, Bukan Data</h3>
+      <p class="how-desc" data-id="how1-desc">Setiap analisis dimulai dari pemahaman masalah bisnis — apa yang ingin dijawab, siapa stakeholder-nya, dan keputusan apa yang akan diambil. Bukan sekadar "mengolah data", tetapi memastikan analisis relevan dengan kebutuhan nyata.</p>
+    </div>
+    <div class="how-card">
+      <p class="how-num">02</p>
+      <span class="how-icon">🧹</span>
+      <h3 class="how-title" data-id="how2-title">Membangun Fondasi Data yang Bersih &amp; Andal</h3>
+      <p class="how-desc" data-id="how2-desc">Data yang baik adalah fondasi dari insight yang valid. Melakukan data cleaning, validasi, dan transformasi untuk memastikan data siap dianalisis — bukan sekadar langsung digunakan.</p>
+    </div>
+    <div class="how-card">
+      <p class="how-num">03</p>
+      <span class="how-icon">📊</span>
+      <h3 class="how-title" data-id="how3-title">Menganalisis dengan Pendekatan Terstruktur &amp; Statistik</h3>
+      <p class="how-desc" data-id="how3-desc">Menggunakan pendekatan analitis yang terstruktur, mulai dari exploratory data analysis hingga metode statistik inferensial dan machine learning bila diperlukan. Fokus bukan hanya mencari pola, tetapi memastikan insight yang dihasilkan memiliki dasar yang kuat.</p>
+    </div>
+    <div class="how-card">
+      <p class="how-num">04</p>
+      <span class="how-icon">💡</span>
+      <h3 class="how-title" data-id="how4-title">Menerjemahkan Insight menjadi Aksi Bisnis</h3>
+      <p class="how-desc" data-id="how4-desc">Insight tidak berhenti di angka. Setiap hasil analisis diterjemahkan menjadi rekomendasi yang jelas, relevan, dan dapat diimplementasikan dalam konteks bisnis.</p>
+    </div>
+    <div class="how-card">
+      <p class="how-num">05</p>
+      <span class="how-icon">📈</span>
+      <h3 class="how-title" data-id="how5-title">Menyampaikan melalui Visualisasi yang Jelas</h3>
+      <p class="how-desc" data-id="how5-desc">Menyampaikan hasil analisis melalui visualisasi dan dashboard yang mudah dipahami oleh stakeholder non-teknis. Karena insight yang baik adalah insight yang bisa dipahami dan digunakan.</p>
+    </div>
+  </div>
+
+  <div class="props-grid">
+    <div class="prop-row" data-id="prop1">Analisis end-to-end: dari problem → data → insight → rekomendasi</div>
+    <div class="prop-row" data-id="prop2">Data yang digunakan merepresentasikan kondisi bisnis yang realistis</div>
+    <div class="prop-row" data-id="prop3">Konteks bisnis sebagai dasar sebelum analisis teknis</div>
+    <div class="prop-row" data-id="prop4">Insight selalu diikuti dengan rekomendasi yang dapat ditindaklanjuti</div>
+    <div class="prop-row" data-id="prop5">Menggunakan pendekatan statistik untuk memastikan validitas analisis</div>
+    <div class="prop-row" data-id="prop6">Visualisasi difokuskan pada kejelasan, bukan kompleksitas</div>
+  </div>
+</div>
+</section>
+
+<!-- CONTACT -->
+<section id="contact">
+<div class="wrapper">
+  <p class="sec-label" data-id="sec-label-contact">// 04 — Contact</p>
+  <h2 class="sec-title" data-id="sec-title-contact">Mari<br />Terhubung</h2>
+  <p class="sec-sub" data-id="sec-sub-contact">Terbuka untuk peluang sebagai Data Analyst, baik full-time maupun freelance. Siap membawa perspektif statistik dan pendekatan analitis untuk membantu pengambilan keputusan berbasis data.</p>
+
+  <div class="hero-cta" style="justify-content:center; margin-bottom:2.5rem">
+    <a href="mailto:sailyrav22@gmail.com" class="btn btn-primary" data-id="btn-email">Email Saya</a>
+  </div>
+
+  <div class="contact-links">
+    <a href="https://linkedin.com/in/sailyroshinaav" class="social-link" target="_blank" rel="noopener">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M19 0H5a5 5 0 00-5 5v14a5 5 0 005 5h14a5 5 0 005-5V5a5 5 0 00-5-5zM8 19H5V8h3v11zM6.5 6.7A1.8 1.8 0 114.7 5a1.8 1.8 0 011.8 1.7zM20 19h-3v-5.6c0-3.4-4-3.1-4 0V19h-3V8h3v1.8c1.4-2.6 7-2.8 7 2.5V19z"/></svg>
+      LinkedIn
+    </a>
+    <a href="https://github.com/sailyroshinaav" class="social-link" target="_blank" rel="noopener">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0a12 12 0 00-3.8 23.4c.6.1.8-.3.8-.6v-2.2c-3.3.7-4-1.6-4-1.6-.6-1.4-1.4-1.8-1.4-1.8-1.1-.8.1-.8.1-.8 1.2.1 1.9 1.3 1.9 1.3 1.1 1.9 2.9 1.3 3.6 1 .1-.8.4-1.3.8-1.6-2.7-.3-5.5-1.3-5.5-5.9 0-1.3.5-2.4 1.3-3.2-.1-.3-.6-1.5.1-3.2 0 0 1-.3 3.4 1.3a11.5 11.5 0 016 0C17 4.7 18 5 18 5c.7 1.7.2 2.9.1 3.2.8.8 1.3 1.9 1.3 3.2 0 4.6-2.8 5.6-5.5 5.9.4.4.8 1.1.8 2.2v3.3c0 .3.2.7.8.6A12 12 0 0012 0z"/></svg>
+      GitHub
+    </a>
+    <a href="https://wa.me/6285800005849" class="social-link" target="_blank" rel="noopener">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17.5 14.4c-.3-.1-1.7-.8-1.9-.9-.3-.1-.5-.1-.7.1l-.9 1.1c-.1.2-.3.2-.6.1-1.7-.7-2.8-1.6-3.8-3.3-.3-.5.3-.5.9-1.5.1-.2 0-.4 0-.6-.1-.1-.7-1.7-1-2.3-.3-.6-.5-.5-.7-.5h-.6c-.2 0-.6.1-.9.4-.3.3-1.1 1.1-1.1 2.7s1.1 3.1 1.3 3.3c.1.2 2.2 3.4 5.4 4.7 2 .9 2.8.9 3.8.8.6-.1 1.9-.8 2.1-1.5.2-.7.2-1.4.2-1.5-.1-.1-.3-.2-.5-.3zM12 2C6.5 2 2 6.5 2 12c0 1.9.5 3.7 1.5 5.2L2 22l4.9-1.5C8.3 21.5 10.1 22 12 22c5.5 0 10-4.5 10-10S17.5 2 12 2zm0 18.4c-1.7 0-3.3-.5-4.7-1.3l-.3-.2-3 .8.8-2.9-.2-.3c-.9-1.4-1.4-3-1.4-4.6C3.2 7.1 7.1 3.2 12 3.2s8.8 3.9 8.8 8.8-3.9 8.4-8.8 8.4z"/></svg>
+      WhatsApp
+    </a>
+  </div>
+  <p class="contact-closing" data-id="contact-closing">Let's turn data into meaningful decisions.</p>
+</div>
+</section>
+
+<footer>
+  <span class="footer-copy">© 2025 SAILY ROSHINA AYU VIDIANA · PEKALONGAN, INDONESIA</span>
+  <a href="#hero" class="footer-back" data-id="footer-back">↑ KEMBALI KE ATAS</a>
+</footer>
+
+<script>
+const T = {
+  id: {
+    'nav-about':'About','nav-projects':'Projects','nav-approach':'Approach','nav-contact':'Contact',
+    'nav-status':'Open to opportunities',
+    'hero-eyebrow':'Sertifikasi Data Analyst (BNSP) · Data Analyst',
+    'hero-desc':'Lulusan Statistika yang telah tersertifikasi Data Analyst (BNSP) dengan pengalaman praktik dalam analisis data <strong>end-to-end</strong> — dari pengumpulan data dan cleaning hingga penyampaian insight yang mendorong aksi nyata melalui dashboard dan model.',
+    'btn-portfolio':'Lihat Case Studies','btn-contact':'Hubungi Saya',
+    'tag-stat':'Statistik Inferensial',
+    'tk-viz':'Visualisasi Data','tk-viz2':'Visualisasi Data',
+    'tk-stat':'Statistik Inferensial','tk-stat2':'Statistik Inferensial',
+    'tk-dash':'Desain Dashboard','tk-dash2':'Desain Dashboard',
+    'tk-reg':'Regresi & Clustering','tk-reg2':'Regresi & Clustering',
+    'sec-label-about':'// 01 — About','sec-title-about':'Tentang Saya',
+    'about-photo-placeholder':'Foto saya',
+    'about-bio-1':'Saya adalah seorang <strong>data enthusiast</strong> dengan dasar yang kuat di bidang statistika dan ketertarikan dalam mengubah data mentah menjadi insight yang dapat digunakan.',
+    'about-bio-2':'Saya berfokus pada penyampaian <strong>data storytelling yang jelas dan berdampak</strong>, dengan menggabungkan kemampuan analisis dan pemahaman bisnis untuk membantu pengambilan keputusan.',
+    'about-bio-3':'Sebagai fresh graduate, saya secara aktif mengembangkan kemampuan melalui berbagai studi kasus dan proyek yang merepresentasikan permasalahan nyata di dunia bisnis. Saya terbuka untuk peluang sebagai <strong>Data Analyst</strong>, baik untuk full-time maupun freelance.',
+    'btn-resume':'Download Resume',
+    'edu-label':'Education','exp-label':'Experience',
+    'edu-school':'Universitas Muhammadiyah Semarang','edu-prodi':'S1 Statistika',
+    'exp1-org':'Bakrie Center Foundation × Yayasan Mentari Sehat Indonesia',
+    'exp1-role':'Campus Leaders Program · IT &amp; Database · Semarang',
+    'exp1-period':'Agustus 2023 – Desember 2023',
+    'exp2-org':'Badan Pusat Statistik (BPS) Kota Semarang',
+    'exp2-role':'Mitra BPS – Petugas Pendataan Lapangan (REGSOSEK 2022)',
+    'exp2-period':'Oktober 2022 – November 2022',
+    'sec-label-projects':'// 02 — Projects',
+    'sec-title-projects':'Data nyata.<br />Insight nyata.',
+    'sec-sub-projects':'Case study yang mensimulasikan pekerjaan analitik sesungguhnya — berangkat dari problem bisnis, dianalisis dengan pendekatan data, dan diakhiri dengan rekomendasi yang dapat diimplementasikan.',
+    'case1-role':'◆ Inventory · Supply Chain · Data Analyst',
+    'case1-title':'Inventory Control System Analysis',
+    'case1-desc':'Mengidentifikasi risiko operasional dan mencegah kehilangan penjualan (lost sales), mengevaluasi risiko dari perspektif rantai pasok (supply chain), serta memastikan modal tidak tertahan secara tidak efisien. Analisis menghasilkan rekomendasi implementasi sistem stock alert untuk meningkatkan efisiensi inventory, dengan temuan 41,1% SKU berada dalam kategori Critical dan Warning.',
+    'case1-pill3':'Automated Stock Alert System','case1-pill4':'Inventory Analysis',
+    'case1-stat1':'Baris data dianalisis','case1-stat2':'SKU Critical + Warning',
+    'sec-label-approach':'// 03 — Approach',
+    'sec-title-approach':'How I Work<br />with Data',
+    'sec-sub-approach':'Understand Problem → Prepare Data → Analyze → Communicate Insight',
+    'how1-title':'Mulai dari Permasalahan, Bukan Data',
+    'how1-desc':'Setiap analisis dimulai dari pemahaman masalah bisnis — apa yang ingin dijawab, siapa stakeholder-nya, dan keputusan apa yang akan diambil. Bukan sekadar "mengolah data", tetapi memastikan analisis relevan dengan kebutuhan nyata.',
+    'how2-title':'Membangun Fondasi Data yang Bersih & Andal',
+    'how2-desc':'Data yang baik adalah fondasi dari insight yang valid. Melakukan data cleaning, validasi, dan transformasi untuk memastikan data siap dianalisis — bukan sekadar langsung digunakan.',
+    'how3-title':'Menganalisis dengan Pendekatan Terstruktur & Statistik',
+    'how3-desc':'Menggunakan pendekatan analitis yang terstruktur, mulai dari exploratory data analysis hingga metode statistik inferensial dan machine learning bila diperlukan. Fokus bukan hanya mencari pola, tetapi memastikan insight yang dihasilkan memiliki dasar yang kuat.',
+    'how4-title':'Menerjemahkan Insight menjadi Aksi Bisnis',
+    'how4-desc':'Insight tidak berhenti di angka. Setiap hasil analisis diterjemahkan menjadi rekomendasi yang jelas, relevan, dan dapat diimplementasikan dalam konteks bisnis.',
+    'how5-title':'Menyampaikan melalui Visualisasi yang Jelas',
+    'how5-desc':'Menyampaikan hasil analisis melalui visualisasi dan dashboard yang mudah dipahami oleh stakeholder non-teknis. Karena insight yang baik adalah insight yang bisa dipahami dan digunakan.',
+    'prop1':'Analisis end-to-end: dari problem → data → insight → rekomendasi',
+    'prop2':'Data yang digunakan merepresentasikan kondisi bisnis yang realistis',
+    'prop3':'Konteks bisnis sebagai dasar sebelum analisis teknis',
+    'prop4':'Insight selalu diikuti dengan rekomendasi yang dapat ditindaklanjuti',
+    'prop5':'Menggunakan pendekatan statistik untuk memastikan validitas analisis',
+    'prop6':'Visualisasi difokuskan pada kejelasan, bukan kompleksitas',
+    'sec-label-contact':'// 04 — Contact',
+    'sec-title-contact':'Mari<br />Terhubung',
+    'sec-sub-contact':'Terbuka untuk peluang sebagai Data Analyst, baik full-time maupun freelance. Siap membawa perspektif statistik dan pendekatan analitis untuk membantu pengambilan keputusan berbasis data.',
+    'btn-email':'Email Saya',
+    'contact-closing':"Let's turn data into meaningful decisions.",
+    'footer-back':'↑ KEMBALI KE ATAS',
+  },
+  en: {
+    'nav-about':'About','nav-projects':'Projects','nav-approach':'Approach','nav-contact':'Contact',
+    'nav-status':'Open to opportunities',
+    'hero-eyebrow':'BNSP Certified Data Analyst · Data Analyst',
+    'hero-desc':'A Statistics graduate certified as a Data Analyst (BNSP) with hands-on experience in <strong>end-to-end</strong> data analysis — from data collection and cleaning to delivering actionable insights through dashboards and models.',
+    'btn-portfolio':'View Case Studies','btn-contact':'Contact Me',
+    'tag-stat':'Statistical Inference',
+    'tk-viz':'Data Visualization','tk-viz2':'Data Visualization',
+    'tk-stat':'Statistical Inference','tk-stat2':'Statistical Inference',
+    'tk-dash':'Dashboard Design','tk-dash2':'Dashboard Design',
+    'tk-reg':'Regression & Clustering','tk-reg2':'Regression & Clustering',
+    'sec-label-about':'// 01 — About','sec-title-about':'About Me',
+    'about-photo-placeholder':'My photo',
+    'about-bio-1':'I am a <strong>data enthusiast</strong> with a strong foundation in statistics and a passion for transforming raw data into actionable insights.',
+    'about-bio-2':'I focus on delivering <strong>clear and impactful data storytelling</strong>, combining analytical skills with business understanding to support decision-making.',
+    'about-bio-3':'As a fresh graduate, I actively develop my skills through case studies and projects that represent real-world business problems. I am open to opportunities as a <strong>Data Analyst</strong>, both full-time and freelance.',
+    'btn-resume':'Download Resume',
+    'edu-label':'Education','exp-label':'Experience',
+    'edu-school':'Universitas Muhammadiyah Semarang','edu-prodi':'Bachelor of Statistics',
+    'exp1-org':'Bakrie Center Foundation × Yayasan Mentari Sehat Indonesia',
+    'exp1-role':'Campus Leaders Program · IT &amp; Database · Semarang',
+    'exp1-period':'August 2023 – December 2023',
+    'exp2-org':'Statistics Indonesia (BPS) – Semarang City',
+    'exp2-role':'BPS Partner – Field Data Enumerator (REGSOSEK 2022)',
+    'exp2-period':'October 2022 – November 2022',
+    'sec-label-projects':'// 02 — Projects',
+    'sec-title-projects':'Real data.<br />Real insight.',
+    'sec-sub-projects':'Case studies that simulate real analytical work — starting from a business problem, analyzed with a data-driven approach, and concluded with implementable recommendations.',
+    'case1-role':'◆ Inventory · Supply Chain · Data Analyst',
+    'case1-title':'Inventory Control System Analysis',
+    'case1-desc':'Identified operational risks and prevented lost sales, evaluated supply chain risks, and ensured capital was not tied up inefficiently. Analysis resulted in recommendations for implementing a stock alert system, with findings that 41.1% of SKUs were in the Critical and Warning categories.',
+    'case1-pill3':'Automated Stock Alert System','case1-pill4':'Inventory Analysis',
+    'case1-stat1':'Rows of data analyzed','case1-stat2':'Critical + Warning SKUs',
+    'sec-label-approach':'// 03 — Approach',
+    'sec-title-approach':'How I Work<br />with Data',
+    'sec-sub-approach':'Understand Problem → Prepare Data → Analyze → Communicate Insight',
+    'how1-title':'Start from the Problem, Not the Data',
+    'how1-desc':'Every analysis begins with a clear understanding of the business problem — what needs to be answered, who the stakeholders are, and what decisions will be made. Not just about "processing data," but ensuring the analysis is relevant to real needs.',
+    'how2-title':'Build a Clean & Reliable Data Foundation',
+    'how2-desc':'Good data is the foundation of valid insights. It involves data cleaning, validation, and transformation to ensure the data is ready for analysis — not just used as-is.',
+    'how3-title':'Analyze with Structure & Statistical Thinking',
+    'how3-desc':'Using a structured analytical approach, from exploratory data analysis to inferential statistics and machine learning when needed. The focus is not just on finding patterns, but ensuring the insights generated are well-grounded.',
+    'how4-title':'Translate Insight into Business Action',
+    'how4-desc':'Insights do not stop at numbers. Every analysis result is translated into clear, relevant, and actionable recommendations within a business context.',
+    'how5-title':'Communicate Through Clear Visualization',
+    'how5-desc':'Communicating analysis results through visualizations and dashboards that are easy to understand for non-technical stakeholders. Because good insights are those that can be understood and used.',
+    'prop1':'End-to-end analysis: from problem → data → insight → recommendation',
+    'prop2':'The data used represents realistic business conditions',
+    'prop3':'Business context as the foundation before technical analysis',
+    'prop4':'Insights are always followed by actionable recommendations',
+    'prop5':'Using a statistical approach to ensure analysis validity',
+    'prop6':'Visualization focuses on clarity, not complexity',
+    'sec-label-contact':'// 04 — Contact',
+    'sec-title-contact':"Let's<br />Connect",
+    'sec-sub-contact':'Open to Data Analyst opportunities — full-time or freelance. Ready to bring a statistical perspective and analytical approach to support data-driven decision making.',
+    'btn-email':'Email Me',
+    'contact-closing':"Let's turn data into meaningful decisions.",
+    'footer-back':'↑ BACK TO TOP',
+  }
+};
+
+let currentLang = localStorage.getItem('lang') || 'id';
+function setLang(lang) {
+  if (lang === currentLang) return;
+  currentLang = lang;
+  localStorage.setItem('lang', lang);
+  document.body.classList.add('lang-switching');
+  setTimeout(() => {
+    applyTranslations(lang);
+    document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('active', b.dataset.lang === lang));
+    document.documentElement.lang = lang;
+    document.body.classList.remove('lang-switching');
+  }, 200);
+}
+function applyTranslations(lang) {
+  const t = T[lang];
+  document.querySelectorAll('[data-id]').forEach(el => {
+    const key = el.getAttribute('data-id');
+    if (t[key] !== undefined) el.innerHTML = t[key];
+  });
+}
+document.addEventListener('DOMContentLoaded', () => {
+  applyTranslations(currentLang);
+  document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('active', b.dataset.lang === currentLang));
+  document.documentElement.lang = currentLang;
+});
+</script>
+</body>
+</html>
