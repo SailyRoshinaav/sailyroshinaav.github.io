@@ -1,0 +1,879 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Inventory Control System Analysis — Saily Roshina</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:      #050810;
+  --bg2:     #080d1a;
+  --bg3:     #0d1526;
+  --border:  rgba(99,210,255,0.12);
+  --border2: rgba(99,210,255,0.25);
+  --cyan:    #63d2ff;
+  --violet:  #b57bff;
+  --green:   #39ff8f;
+  --red:     #ff4d4d;
+  --yellow:  #ffc93c;
+  --text:    #e8edf5;
+  --muted:   #7a8ba8;
+  --mono:    'Space Mono', monospace;
+  --sans:    'Space Grotesk', sans-serif;
+}
+
+html { scroll-behavior: smooth; }
+body { background: var(--bg); color: var(--text); font-family: var(--sans); font-size: 16px; line-height: 1.7; overflow-x: hidden; }
+
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.04) 2px, rgba(0,0,0,0.04) 4px);
+  pointer-events: none; z-index: 999;
+}
+
+.grid-bg {
+  position: fixed; inset: 0;
+  background-image: linear-gradient(rgba(99,210,255,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(99,210,255,0.04) 1px, transparent 1px);
+  background-size: 60px 60px; z-index: 0; pointer-events: none;
+}
+.grid-bg::after { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse 70% 50% at 50% 0%, rgba(99,210,255,0.06) 0%, transparent 70%); }
+
+.orb { position: fixed; border-radius: 50%; filter: blur(80px); pointer-events: none; z-index: 0; opacity: 0.1; }
+.orb-1 { width: 500px; height: 500px; background: var(--cyan); top: -200px; left: -100px; }
+.orb-2 { width: 400px; height: 400px; background: var(--violet); bottom: -150px; right: -100px; }
+
+/* NAV */
+nav {
+  position: fixed; top: 0; left: 0; right: 0;
+  display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+  padding: 1rem clamp(1.5rem, 5vw, 5rem);
+  background: rgba(5,8,16,0.85); backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border); z-index: 100;
+}
+.nav-back {
+  font-family: var(--mono); font-size: 0.7rem; color: var(--muted);
+  text-decoration: none; letter-spacing: 0.1em; display: flex; align-items: center; gap: 0.5rem;
+  transition: color 0.2s;
+}
+.nav-back:hover { color: var(--cyan); }
+.nav-logo { font-family: var(--mono); font-size: 0.8rem; color: var(--cyan); text-decoration: none; letter-spacing: 0.1em; }
+
+.nav-right { display: flex; align-items: center; gap: 1rem; }
+.lang-toggle { display: flex; align-items: center; background: var(--bg3); border: 1px solid var(--border2); border-radius: 2px; overflow: hidden; }
+.lang-btn { font-family: var(--mono); font-size: 0.62rem; font-weight: 700; letter-spacing: 0.1em; padding: 0.3rem 0.75rem; background: transparent; color: var(--muted); border: none; cursor: pointer; transition: all 0.2s; text-transform: uppercase; }
+.lang-btn.active { background: var(--cyan); color: var(--bg); }
+.lang-btn:not(.active):hover { color: var(--cyan); }
+
+/* LAYOUT */
+.wrapper { max-width: 860px; margin: 0 auto; padding: 0 clamp(1.5rem, 5vw, 4rem); position: relative; z-index: 1; }
+
+/* HERO */
+.case-hero {
+  padding-top: 7rem; padding-bottom: 4rem;
+  border-bottom: 1px solid var(--border);
+  position: relative; z-index: 1;
+}
+.case-hero .wrapper { padding-top: 2rem; padding-bottom: 2rem; }
+
+.case-eyebrow {
+  font-family: var(--mono); font-size: 0.68rem; color: var(--violet);
+  letter-spacing: 0.18em; text-transform: uppercase; margin-bottom: 1.25rem;
+  display: flex; align-items: center; gap: 0.6rem;
+  animation: fadeUp 0.6s ease both;
+}
+.case-eyebrow::before { content: '◆'; font-size: 0.45rem; color: var(--violet); }
+
+.case-title {
+  font-size: clamp(2rem, 5vw, 3.5rem); font-weight: 700;
+  line-height: 1.05; letter-spacing: -0.02em; margin-bottom: 1.5rem;
+  animation: fadeUp 0.6s 0.1s ease both;
+}
+
+.case-subtitle {
+  font-family: var(--mono); font-size: 0.8rem; color: var(--cyan);
+  letter-spacing: 0.06em; margin-bottom: 2rem;
+  animation: fadeUp 0.6s 0.15s ease both;
+}
+
+.case-meta {
+  display: flex; flex-wrap: wrap; gap: 2rem; margin-bottom: 2.5rem;
+  animation: fadeUp 0.6s 0.2s ease both;
+}
+.meta-item { display: flex; flex-direction: column; gap: 0.2rem; }
+.meta-label { font-family: var(--mono); font-size: 0.6rem; color: var(--muted); letter-spacing: 0.14em; text-transform: uppercase; }
+.meta-val { font-size: 0.9rem; font-weight: 500; color: var(--text); }
+
+.hero-pills { display: flex; flex-wrap: wrap; gap: 0.5rem; animation: fadeUp 0.6s 0.25s ease both; }
+.pill {
+  font-family: var(--mono); font-size: 0.62rem; color: var(--muted);
+  border: 1px solid var(--border); padding: 0.25rem 0.7rem;
+  border-radius: 2px; letter-spacing: 0.06em; background: rgba(5,8,16,0.5);
+}
+
+.hero-narrative { margin-top: 2.5rem; font-size: 1.05rem; line-height: 1.8; color: var(--muted); }
+.hero-narrative p { margin-bottom: 1rem; }
+.hero-narrative strong { color: var(--text); }
+
+/* DOC BUTTONS FIXED FOR HORIZONTAL ALIGNMENT */
+.doc-buttons {
+  display: flex; flex-direction: row; flex-wrap: wrap; gap: 1rem; margin-top: 2.5rem;
+  animation: fadeUp 0.6s 0.3s ease both; align-items: center;
+}
+.doc-btn {
+  display: inline-flex; align-items: center; gap: 0.6rem;
+  padding: 0.8rem 1.5rem;
+  font-family: var(--mono); font-size: 0.72rem; font-weight: 700;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  text-decoration: none; border: none; cursor: pointer;
+  transition: all 0.25s; clip-path: polygon(6px 0%, 100% 0%, calc(100% - 6px) 100%, 0% 100%);
+}
+.doc-btn-primary { background: var(--cyan); color: var(--bg); }
+.doc-btn-primary:hover { box-shadow: 0 0 25px rgba(99,210,255,0.45); transform: translateY(-2px); }
+.doc-btn-ghost { background: transparent; color: var(--violet); border: 1px solid rgba(181,123,255,0.35); }
+.doc-btn-ghost:hover { background: rgba(181,123,255,0.06); border-color: var(--violet); box-shadow: 0 0 20px rgba(181,123,255,0.12); transform: translateY(-2px); }
+
+/* KPI STRIP */
+.kpi-strip {
+  background: var(--bg2); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+  position: relative; z-index: 1;
+}
+.kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 1.5px; background: var(--border); }
+.kpi-card { background: var(--bg2); padding: 1.75rem 1.25rem; text-align: center; }
+.kpi-val { font-family: var(--mono); font-size: 1.5rem; font-weight: 700; line-height: 1; margin-bottom: 0.4rem; }
+.kpi-label { font-size: 0.7rem; color: var(--muted); line-height: 1.4; }
+.cyan { color: var(--cyan); text-shadow: 0 0 20px rgba(99,210,255,0.3); }
+.red { color: var(--red); text-shadow: 0 0 20px rgba(255,77,77,0.3); }
+.yellow { color: var(--yellow); text-shadow: 0 0 20px rgba(255,201,60,0.3); }
+.green { color: var(--green); text-shadow: 0 0 20px rgba(57,255,143,0.3); }
+.violet { color: var(--violet); text-shadow: 0 0 20px rgba(181,123,255,0.3); }
+
+/* CONTENT SECTIONS */
+.content-section { padding: 4rem 0; border-bottom: 1px solid var(--border); position: relative; z-index: 1; }
+.content-section:last-child { border-bottom: none; }
+
+.sec-label { font-family: var(--mono); font-size: 0.62rem; color: var(--cyan); letter-spacing: 0.2em; text-transform: uppercase; margin-bottom: 0.5rem; opacity: 0.7; }
+.sec-title { font-size: clamp(1.4rem, 3vw, 2rem); font-weight: 700; letter-spacing: -0.02em; line-height: 1.15; margin-bottom: 1.25rem; }
+.sec-body { color: var(--muted); font-size: 0.95rem; line-height: 1.8; }
+.sec-body p + p { margin-top: 1rem; }
+.sec-body strong { color: var(--text); font-weight: 500; }
+.sec-body ul { padding-left: 1.25rem; margin-top: 0.75rem; margin-bottom: 0.75rem; }
+.sec-body ul li { margin-bottom: 0.35rem; }
+
+/* TWO COL */
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 2.5rem; align-items: start; }
+
+/* ISSUE CARDS */
+.issue-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5px; background: var(--border); border: 1px solid var(--border); margin-top: 2rem; }
+.issue-card { background: var(--bg); padding: 1.5rem; transition: background 0.2s; }
+.issue-card:hover { background: var(--bg3); }
+.issue-num { font-family: var(--mono); font-size: 0.58rem; color: var(--cyan); letter-spacing: 0.2em; margin-bottom: 0.75rem; opacity: 0.6; }
+.issue-title { font-size: 0.95rem; font-weight: 600; margin-bottom: 0.4rem; color: var(--text); }
+.issue-desc { font-size: 0.82rem; color: var(--muted); line-height: 1.55; }
+
+/* BUSINESS QUESTIONS */
+.bq-list { display: flex; flex-direction: column; gap: 1px; background: var(--border); border: 1px solid var(--border); margin-top: 2rem; }
+.bq-item { background: var(--bg2); padding: 1.5rem 2rem; display: flex; gap: 1.25rem; align-items: flex-start; }
+.bq-num { font-family: var(--mono); font-size: 0.65rem; color: var(--cyan); background: rgba(99,210,255,0.08); border: 1px solid var(--border2); width: 28px; height: 28px; border-radius: 2px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 2px; }
+.bq-q { font-size: 0.95rem; font-weight: 600; margin-bottom: 0.3rem; color: var(--text); }
+.bq-purpose { font-size: 0.82rem; color: var(--muted); }
+
+/* METHODOLOGY STEPS */
+.method-steps { display: flex; flex-direction: column; gap: 1.5px; background: var(--border); border: 1px solid var(--border); margin-top: 2rem; }
+.method-step { background: var(--bg); padding: 1.5rem 2rem; display: grid; grid-template-columns: 2rem 1fr; gap: 1rem; align-items: start; transition: background 0.2s; }
+.method-step:hover { background: var(--bg3); }
+.step-num { font-family: var(--mono); font-size: 0.65rem; color: var(--cyan); opacity: 0.6; margin-top: 0.15em; }
+.step-title { font-size: 0.95rem; font-weight: 600; margin-bottom: 0.3rem; color: var(--text); }
+.step-desc { font-size: 0.82rem; color: var(--muted); line-height: 1.55; }
+
+/* DATA SCHEMA STICKER */
+.schema-box { background: var(--bg3); border: 1px solid var(--border); padding: 1.5rem; margin-top: 1.5rem; }
+.schema-title { font-family: var(--mono); font-size: 0.65rem; color: var(--violet); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 0.75rem; }
+.schema-tags { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+.tag-code { font-family: var(--mono); font-size: 0.7rem; background: rgba(5,8,16,0.6); border: 1px solid var(--border); padding: 0.15rem 0.45rem; color: var(--cyan); border-radius: 2px; }
+
+/* FINDINGS */
+.finding-grid { display: flex; flex-direction: column; gap: 1rem; margin-top: 2rem; }
+.finding-card {
+  background: var(--bg2); border: 1px solid var(--border);
+  padding: 1.75rem 2rem;
+  display: grid; grid-template-columns: auto 1fr; gap: 1.25rem; align-items: start;
+  transition: border-color 0.2s;
+}
+.finding-card:hover { border-color: var(--border2); }
+.finding-icon { font-size: 1.5rem; line-height: 1; }
+.finding-label { font-family: var(--mono); font-size: 0.58rem; color: var(--violet); letter-spacing: 0.14em; text-transform: uppercase; margin-bottom: 0.35rem; }
+.finding-title { font-size: 1rem; font-weight: 600; margin-bottom: 0.5rem; color: var(--text); }
+.finding-body { font-size: 0.88rem; color: var(--muted); line-height: 1.65; }
+.finding-body strong { color: var(--text); }
+
+/* RESPONSIVE IFRAME CONTAINER FOR DASHBOARD */
+.dashboard-container {
+  position: relative;
+  width: 100%;
+  padding-top: 56.25%; /* 16:9 Aspect Ratio */
+  margin-top: 1.5rem;
+  border: 1px solid var(--border2);
+  background: var(--bg2);
+  border-radius: 2px;
+}
+.dashboard-container iframe {
+  position: absolute;
+  top: 0; left: 0; bottom: 0; right: 0;
+  width: 100%; height: 100%;
+  border: none;
+}
+
+/* RECOMMENDATION CARDS */
+.rec-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5px; background: var(--border); border: 1px solid var(--border); margin-top: 2rem; }
+.rec-card { background: var(--bg); padding: 2rem; transition: background 0.2s; }
+.rec-card:hover { background: var(--bg3); }
+.rec-num { font-family: var(--mono); font-size: 0.58rem; color: var(--cyan); letter-spacing: 0.2em; margin-bottom: 0.6rem; opacity: 0.6; }
+.rec-title { font-size: 1rem; font-weight: 600; margin-bottom: 0.5rem; color: var(--text); }
+.rec-body { font-size: 0.85rem; color: var(--muted); line-height: 1.65; }
+.rec-body strong { color: var(--text); }
+
+/* DOC SECTION */
+.doc-section { background: var(--bg2); border: 1px solid var(--border); padding: 2.5rem; margin-top: 2rem; }
+.doc-section-title { font-family: var(--mono); font-size: 0.65rem; color: var(--cyan); letter-spacing: 0.18em; text-transform: uppercase; margin-bottom: 1.5rem; opacity: 0.8; }
+.doc-links { display: flex; flex-wrap: wrap; gap: 1rem; }
+.doc-link-card {
+  flex: 1; min-width: 240px;
+  background: var(--bg3); border: 1px solid var(--border);
+  padding: 1.25rem 1.5rem;
+  text-decoration: none; color: inherit;
+  display: flex; align-items: center; gap: 1rem;
+  transition: all 0.25s;
+}
+.doc-link-card:hover { border-color: var(--border2); background: rgba(99,210,255,0.04); transform: translateY(-2px); }
+.doc-link-icon { font-size: 1.4rem; flex-shrink: 0; }
+.doc-link-type { font-family: var(--mono); font-size: 0.58rem; color: var(--muted); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 0.2rem; }
+.doc-link-name { font-size: 0.88rem; font-weight: 500; color: var(--cyan); }
+.doc-link-arrow { margin-left: auto; color: var(--muted); font-size: 1rem; transition: all 0.2s; }
+.doc-link-card:hover .doc-link-arrow { color: var(--cyan); transform: translateX(3px); }
+
+/* FOOTER */
+.case-footer { border-top: 1px solid var(--border); padding: 1.5rem clamp(1.5rem, 5vw, 4rem); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; position: relative; z-index: 1; }
+.footer-copy { font-family: var(--mono); font-size: 0.62rem; color: var(--muted); letter-spacing: 0.08em; }
+.footer-back { font-family: var(--mono); font-size: 0.62rem; color: var(--muted); text-decoration: none; transition: color 0.2s; }
+.footer-back:hover { color: var(--cyan); }
+
+/* LANG TRANSITION */
+[data-id] { transition: opacity 0.15s ease; }
+body.lang-switching [data-id] { opacity: 0; }
+
+/* ANIMATIONS */
+@keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+  .two-col { grid-template-columns: 1fr; gap: 1.5rem; }
+  .rec-grid { grid-template-columns: 1fr; }
+  .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+  .bq-item { flex-direction: column; gap: 0.75rem; }
+}
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+
+<nav>
+  <a href="#" class="nav-back">← <span data-id="nav-back">KEMBALI KE PORTFOLIO</span></a>
+  <a href="#" class="nav-logo">SAILY ROSHINA // PORTFOLIO</a>
+  <div class="nav-right">
+    <div class="lang-toggle">
+      <button class="lang-btn active" data-lang="id" onclick="setLang('id')">ID</button>
+      <button class="lang-btn" data-lang="en" onclick="setLang('en')">EN</button>
+    </div>
+  </div>
+</nav>
+
+<header class="case-hero">
+  <div class="wrapper">
+    <div class="case-eyebrow" data-id="hero-eyebrow">Inventory · Supply Chain · Data Analyst</div>
+    <h1 class="case-title" data-id="case-title">Inventory Control System Analysis</h1>
+    <div class="case-subtitle" data-id="case-subtitle">GudangKu Indonesia · Q1 2026 Stock Analysis</div>
+    
+    <div class="case-meta">
+      <div class="meta-item">
+        <span class="meta-label" data-id="meta-label-1">Perusahaan</span>
+        <span class="meta-val" data-id="meta-val-1">GudangKu Indonesia</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label" data-id="meta-label-2">Industri</span>
+        <span class="meta-val" data-id="meta-val-2">Distribution & Supply Chain</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label" data-id="meta-label-3">Periode</span>
+        <span class="meta-val" data-id="meta-val-3">Q1 2026 (Pre-Lebaran)</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label" data-id="meta-label-4">Tools</span>
+        <span class="meta-val" data-id="meta-val-4">Google Sheets</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label" data-id="meta-label-5">Role</span>
+        <span class="meta-val" data-id="meta-val-5">Data Analyst</span>
+      </div>
+    </div>
+
+    <div class="hero-pills">
+      <span class="pill">Inventory Analysis</span>
+      <span class="pill">Reorder Strategy</span>
+      <span class="pill">Stock Alert System</span>
+      <span class="pill">Supply Chain Risk</span>
+      <span class="pill">Dashboarding</span>
+    </div>
+
+    <div class="hero-narrative">
+      <p data-id="hero-desc-1">Menjelang Lebaran 2026, GudangKu menghadapi lonjakan permintaan hingga 60% di kategori tertentu. Namun, sistem monitoring inventory masih dilakukan secara manual oleh Warehouse Manager, menyebabkan risiko keterlambatan reorder, stockout, dan alokasi stok yang tidak efisien.</p>
+      <p data-id="hero-desc-2">Project ini berfokus pada membangun sistem analisis inventory berbasis data untuk mengidentifikasi risiko stockout, mengevaluasi performa supplier, dan mengoptimalkan strategi reorder sebelum periode <strong>peak season</strong>.</p>
+    </div>
+
+    <div class="doc-buttons">
+      <a href="https://docs.google.com/spreadsheets/d/1B-os3eVW00Y4lguJjFlwRQtpZCH9CpDtmklgIjajhuk/edit?usp=sharing" target="_blank" rel="noopener" class="doc-btn doc-btn-primary">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 3c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm7 13H5v-.23c0-.62.28-1.2.76-1.58C7.47 15.82 9.64 15 12 15s4.53.82 6.24 2.19c.48.38.76.97.76 1.58V19z"/></svg>
+        <span data-id="btn-dashboard">Buka Google Sheets</span>
+      </a>
+      <a href="https://canva.link/y3wyabbjuzvhjk6" target="_blank" rel="noopener" class="doc-btn doc-btn-ghost">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+        <span data-id="btn-slides">Lihat Presentasi</span>
+      </a>
+    </div>
+  </div>
+</header>
+
+<section class="kpi-strip">
+  <div class="kpi-grid">
+    <div class="kpi-card">
+      <div class="kpi-val cyan">346</div>
+      <div class="kpi-label" data-id="kpi-1">Total SKU Aktif</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-val violet">± Rp 3.0 M</div>
+      <div class="kpi-label" data-id="kpi-2">Total Inventory Value</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-val yellow">41.62%</div>
+      <div class="kpi-label" data-id="kpi-3">SKU Di Bawah ROP</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-val red">39 SKU</div>
+      <div class="kpi-label" data-id="kpi-4">Kondisi CRITICAL (11.3%)</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-val green">Rp 543.5 M</div>
+      <div class="kpi-label" data-id="kpi-5">Overstock Value Risk</div>
+    </div>
+  </div>
+</section>
+
+<section class="content-section">
+  <div class="wrapper">
+    <div class="sec-label" data-id="sec-label-1">// 01 . Overview</div>
+    <h2 class="sec-title" data-id="sec-title-1">Project Overview & Konteks Bisnis</h2>
+    <div class="sec-body">
+      <p data-id="overview-p1">Project ini mensimulasikan peran Data Analyst dalam membantu tim operasional GudangKu mengambil keputusan inventory yang kritikal menjelang peak season. Analisis dilakukan secara end-to-end mulai dari eksplorasi data, identifikasi masalah operasional, hingga penyusunan rekomendasi strategis berbasis data.</p>
+      
+      <div class="two-col" style="margin-top: 2rem;">
+        <div>
+          <strong data-id="overview-sub-1">Business Context</strong>
+          <p data-id="overview-sub-p1">GudangKu Indonesia adalah perusahaan distribusi consumer goods dengan 3 gudang utama (Jakarta Pusat, Surabaya Jawa Timur, dan Medan Sumatera Utara). Perusahaan mengelola ratusan SKU aktif dari berbagai kategori produk seperti Food & Beverage, Personal Care, Home Care, Baby Products, dan Snacks.</p>
+          <p data-id="overview-sub-p2">Setiap kategori memiliki pola demand, margin keuntungan, dan lead time supplier yang berbeda, sehingga strategi reorder tidak bisa disamaratakan.</p>
+        </div>
+        <div>
+          <strong data-id="overview-sub-2">Konteks Peak Season (Lebaran 2026)</strong>
+          <p data-id="overview-sub-p3">Menjelang Lebaran, demand melonjak drastis sebesar 40–60% khusus untuk kategori F&B dan Snacks. Dengan lead time dari pihak supplier yang berkisar antara 3–14 hari, pemesanan stok ideal harus dilakukan 2–3 minggu sebelum Ramadan.</p>
+          <p data-id="overview-sub-p4">Keterlambatan keputusan reorder bahkan hanya dalam 1 hari berpotensi mengakibatkan kehilangan momentum penjualan (stockout) pada momen krusial ini.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="content-section">
+  <div class="wrapper">
+    <div class="sec-label" data-id="sec-label-2">// 02 . Problem Statement</div>
+    <h2 class="sec-title" data-id="sec-title-2">Masalah Utama & Dampak Finansial</h2>
+    <div class="sec-body">
+      <p data-id="problem-p1">Sistem inventory GudangKu saat ini masih sangat bergantung pada monitoring manual menggunakan spreadsheet terfragmentasi. Mengelola 400+ SKU di 3 lokasi gudang dengan pendekatan ini terbukti tidak scalable, rentan terhadap human error, dan tidak memiliki sistem penanda bahaya dini (alert system).</p>
+      
+      <div class="issue-grid">
+        <div class="issue-card">
+          <div class="issue-num">ISSUE_01</div>
+          <div class="issue-title" data-id="issue-t1">Delayed Reordering Risk</div>
+          <div class="issue-desc" data-id="issue-d1">Risiko kehabisan pasokan barang yang tinggi karena proses pemesanan ulang yang lambat akibat sistem manual.</div>
+        </div>
+        <div class="issue-card">
+          <div class="issue-num">ISSUE_02</div>
+          <div class="issue-title" data-id="issue-t2">No Early Warning</div>
+          <div class="issue-desc" data-id="issue-d2">Absennya indikator otomatis atau Reorder Point (ROP) alert untuk mendeteksi kapan stok harus segera dibeli kembali.</div>
+        </div>
+        <div class="issue-card">
+          <div class="issue-num">ISSUE_03</div>
+          <div class="issue-title" data-id="issue-t3">Data Terfragmentasi</div>
+          <div class="issue-desc" data-id="issue-d3">Pemisahan data inventory antar warehouse (Jakarta, Surabaya, Medan) menyulitkan sinkronisasi stok nasional.</div>
+        </div>
+      </div>
+
+      <p style="margin-top: 2rem;" data-id="problem-p2"><strong>Business Impact:</strong> Terjadinya Stockout mengakibatkan hilangnya potensi revenue instan dan memicu kepindahan pelanggan ke kompetitor. Di sisi lain, penumpukan stok berlebih (Overstock) mengunci modal kerja operasional serta memperbesar risiko kerusakan/kedaluwarsa barang. Secara komparatif bisnis, biaya akibat stockout jauh lebih mahal daripada biaya penataan ruang simpan.</p>
+    </div>
+  </div>
+</section>
+
+<section class="content-section">
+  <div class="wrapper">
+    <div class="sec-label" data-id="sec-label-3">// 03 . Scope & Questions</div>
+    <h2 class="sec-title" data-id="sec-title-3">Pertanyaan Bisnis & Ruang Lingkup</h2>
+    <div class="sec-body">
+      <p data-id="scope-p1">Analisis ini dibatasi pada pemantauan terhadap 346 SKU aktif di 3 lokasi warehouse utama menggunakan kerangka perhitungan matematis Reorder Point (ROP), parameter stock ratio, serta analisis stabilitas lead time pengiriman barang.</p>
+      
+      <div class="bq-list">
+        <div class="bq-item">
+          <div class="bq-num">?</div>
+          <div>
+            <div class="bq-q" data-id="bq-q1">SKU mana saja yang memiliki risiko stockout paling tinggi dalam waktu dekat?</div>
+            <div class="bq-purpose" data-id="bq-p1">Tujuan: Memberikan daftar prioritas restock darurat bagi tim procurement sebelum peak season tiba.</div>
+          </div>
+        </div>
+        <div class="bq-item">
+          <div class="bq-num">?</div>
+          <div>
+            <div class="bq-q" data-id="bq-q2">Supplier mana yang memiliki performa pengiriman tidak andal (lead time variability)?</div>
+            <div class="bq-purpose" data-id="bq-p2">Tujuan: Memitigasi risiko hambatan supply chain dari pihak ketiga.</div>
+          </div>
+        </div>
+        <div class="bq-item">
+          <div class="bq-num">?</div>
+          <div>
+            <div class="bq-q" data-id="bq-q3">Apakah terjadi fenomena overstock dan bagaimana tingkat efisiensi inventory saat ini?</div>
+            <div class="bq-purpose" data-id="bq-p3">Tujuan: Mengidentifikasi pemborosan kapital dan ruang simpan di gudang spesifik.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="content-section">
+  <div class="wrapper">
+    <div class="sec-label" data-id="sec-label-4">// 04 . Objectives & Urgency</div>
+    <h2 class="sec-title" data-id="sec-title-4">Tujuan Strategis & Tingkat Urgensi</h2>
+    <div class="sec-body">
+      <p data-id="obj-p1">Sasaran utama proyek ini adalah mengidentifikasi SKU berisiko tinggi secara akurat, meningkatkan efisiensi distribusi alokasi antar gudang, serta memberikan panduan reorder otomatis berbasis metrik penjualan nyata.</p>
+      <div style="background: rgba(255,77,77,0.05); border: 1px solid rgba(255,77,77,0.2); padding: 1.5rem; margin-top: 1.5rem;">
+        <span style="font-family: var(--mono); font-size: 0.7rem; color: var(--red); display: block; margin-bottom: 0.25rem; font-weight: 700;" data-id="urgency-label">🚨 WHY IT MATTERS NOW</span>
+        <p style="font-size: 0.95rem; margin: 0;" data-id="urgency-text">Dengan momentum Lebaran 2026 yang sudah di depan mata dan rentang waktu pengiriman barang (lead time) supplier mencapai hingga 14 hari, ini bukan lagi pembicaraan strategi jangka panjang. Ini adalah serangkaian keputusan operasional taktikal yang wajib dieksekusi <strong>SEKARANG JUGA</strong>.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="content-section">
+  <div class="wrapper">
+    <div class="sec-label" data-id="sec-label-5">// 05 . Pipeline Workflow</div>
+    <h2 class="sec-title" data-id="sec-title-5">Arsitektur Data & Alur Kerja Sistem</h2>
+    <div class="sec-body">
+      <p data-id="pipeline-p1">Pipeline pengolahan data dikembangkan secara terstruktur untuk menjamin validitas hasil keputusan dari total nilai aset inventory berkisar ± Rp 3.0 Miliar.</p>
+      
+      <div class="method-steps">
+        <div class="method-step">
+          <div class="step-num">01</div>
+          <div>
+            <div class="step-title" data-id="step-t1">Data Cleaning & Validation</div>
+            <div class="step-desc" data-id="step-d1">Pembersihan data mentah, meliputi data duplikat, nilai negatif stock, data di luar rentang periode waktu analisis (tanggal), zero unit price, dan data hilang (missing value).</div>
+          </div>
+        </div>
+        <div class="method-step">
+          <div class="step-num">02</div>
+          <div>
+            <div class="step-title" data-id="step-t2">Perhitungan Formula Stock</div>
+            <div class="step-desc" data-id="step-d2">Stock Ratio — CurrentStock / ReorderPoint<br>Alert Status — CRITICAL (&lt;0.5), WARNING (0.5-1.0), OK (1.0-2.0), OVERSTOCK (&gt;2.0)<br>Days Until Stockout — CurrentStock / DailyAvgSales (atau N/A jika sales = 0)</div>
+          </div>
+        </div>
+        <div class="method-step">
+          <div class="step-num">03</div>
+          <div>
+            <div class="step-title" data-id="step-t3">Klasifikasi Alert Status System</div>
+            <div class="step-desc" data-id="step-d3">Automated classification ke dalam 4 kondisi status logis: OK, WARNING, CRITICAL, dan OVERSTOCK.</div>
+          </div>
+        </div>
+        <div class="method-step">
+          <div class="step-num">04</div>
+          <div>
+            <div class="step-title" data-id="step-t4">Analisis Risiko Supplier</div>
+            <div class="step-desc" data-id="step-d4">Pengukuran konsistensi waktu kirim supplier menggunakan standar deviasi (STDEV) dan Koefisien Variasi (CV) lead time.</div>
+          </div>
+        </div>
+        <div class="method-step">
+          <div class="step-num">05</div>
+          <div>
+            <div class="step-title" data-id="step-t5">Dashboarding & Rekomendasi</div>
+            <div class="step-desc" data-id="step-d5">Visualisasi interaktif temuan ke dalam dashboard performa dan perumusan aksi mitigasi bisnis.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="schema-box">
+        <div class="schema-title" data-id="schema-title">Data yang Diproses</div>
+        <div class="schema-tags">
+          <span class="tag-code">SKU</span><span class="tag-code">ProductName</span><span class="tag-code">Category</span><span class="tag-code">Warehouse</span>
+          <span class="tag-code">SupplierID</span><span class="tag-code">SupplierName</span><span class="tag-code">LeadTime</span><span class="tag-code">UnitPrice</span>
+          <span class="tag-code">CurrentStock</span><span class="tag-code">ReorderPoint</span><span class="tag-code">SafetyStock</span><span class="tag-code">MaxStock</span>
+          <span class="tag-code">AvgDailySales</span><span class="tag-code">MonthlySales3M</span><span class="tag-code">LastRestockDate</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="content-section">
+  <div class="wrapper">
+    <div class="sec-label" data-id="sec-label-6">// 06 . Executive Summary & Insights</div>
+    <h2 class="sec-title" data-id="sec-title-6">Ringkasan Eksekutif & Temuan Analisis</h2>
+    <div class="sec-body">
+      <p data-id="finding-intro-1">Data menunjukkan fakta mengejutkan: <strong>41.62% SKU aktif berada di bawah batas Reorder Point (ROP)</strong>, dengan 39 SKU (11.3%) di antaranya berada dalam status <strong>CRITICAL</strong> yang membutuhkan suntikan dana reorder darurat sebesar Rp 218.7 Juta. Di saat yang sama, terdapat dana idle sebesar Rp 543.5 Juta yang terperangkap dalam produk berkategori <strong>OVERSTOCK</strong>.</p>
+      <p style="color: var(--cyan);" data-id="finding-intro-2">Kesimpulan Utama: Masalah utama GudangKu saat ini bukanlah kekurangan modal atau stok secara total, melainkan akibat distribusi alokasi stok yang tidak efisien dan tidak merata.</p>
+
+      <div class="finding-grid">
+        <div class="finding-card">
+          <div class="finding-icon">📉</div>
+          <div>
+            <div class="finding-label" data-id="f-lbl-1">Temuan 01</div>
+            <div class="finding-title" data-id="f-t1">Kondisi Understocked Secara Sistemik</div>
+            <div class="finding-body" data-id="f-b1">Sebanyak 41.1% SKU terjebak di zona WARNING dan CRITICAL. Ini membuktikan bahwa mekanisme monitoring manual membuat sistem pemesanan ulang barang tidak berjalan optimal.</div>
+          </div>
+        </div>
+        
+        <div class="finding-card">
+          <div class="finding-icon">🧴</div>
+          <div>
+            <div class="finding-label" data-id="f-lbl-2">Temuan 02</div>
+            <div class="finding-title" data-id="f-t2">Personal Care Adalah Kategori Paling Berisiko</div>
+            <div class="finding-body" data-id="f-b2"><strong>52.1% SKU</strong> di kategori Personal Care bernilai di bawah ROP. Produk ini tergolong fast-moving, namun sayangnya tidak ter-cover dengan perencanaan reorder yang aman.</div>
+          </div>
+        </div>
+
+        <div class="finding-card">
+          <div class="finding-icon">🏢</div>
+          <div>
+            <div class="finding-label" data-id="f-lbl-3">Temuan 03</div>
+            <div class="finding-title" data-id="f-t3">Pola Masalah Identik di Semua Gudang</div>
+            <div class="finding-body" data-id="f-b3">Persentase item kritis di Jakarta, Surabaya, maupun Medan hampir serupa (~41%). Hal ini menandakan bahwa akar masalah bukan berada pada operasional lokal gudang tertentu, melainkan kegagalan <strong>sistem terpusat</strong>.</div>
+          </div>
+        </div>
+
+        <div class="finding-card">
+          <div class="finding-icon">⏱️</div>
+          <div>
+            <div class="finding-label" data-id="f-lbl-4">Temuan 04</div>
+            <div class="finding-title" data-id="f-t4">39 SKU Status CRITICAL Butuh Tindakan Hari Ini</div>
+            <div class="finding-body" data-id="f-b4">1 SKU tercatat sudah stockout total, and 14 SKU lainnya akan habis dalam waktu 1 hari saja. Mengingat lead time minimal supplier adalah 3 hari, pemesanan jalur normal dipastikan terlambat dan membutuhkan eskalasi kilat.</div>
+          </div>
+        </div>
+
+        <div class="finding-card">
+          <div class="finding-icon">💥</div>
+          <div>
+            <div class="finding-label" data-id="f-lbl-5">Temuan 05</div>
+            <div class="finding-title" data-id="f-t5">Simulasi Risiko Lonjakan Permintaan Lebaran</div>
+            <div class="finding-body" data-id="f-b5">Apabila demand naik sebesar 50% saat puncak Lebaran, jumlah SKU berstatus <strong>CRITICAL akan meroket tajam dari 21.7% menjadi 78.3%</strong>. Jendela waktu koreksi sebelum seluruh inventory lumpuh sangatlah sempit.</div>
+          </div>
+        </div>
+
+        <div class="finding-card">
+          <div class="finding-icon">⚠️</div>
+          <div>
+            <div class="finding-label" data-id="f-lbl-6">Temuan 06</div>
+            <div class="finding-title" data-id="f-t6">Analisis Kerentanan Supplier (Supplier Risk)</div>
+            <div class="finding-body">
+              <ul style="padding-left:1.2rem; margin:0; color:var(--muted); font-size:0.88rem;">
+                <li data-id="f-b6-li1"><strong>SUP-004:</strong> Status High Risk karena memiliki nilai CV tertinggi sekaligus memegang dampak volume pasokan yang masif.</li>
+                <li data-id="f-b6-li2"><strong>SUP-005 & SUP-007:</strong> Menunjukkan variabilitas lead time pengiriman barang paling tidak konsisten.</li>
+                <li data-id="f-b6-li3"><strong>SUP-003:</strong> Sangat konsisten dalam mengirimkan barang, tetapi tingkat ketergantungan (dependency) operasional GudangKu terhadapnya terlampau tinggi.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div class="finding-card">
+          <div class="finding-icon">⚖️</div>
+          <div>
+            <div class="finding-label" data-id="f-lbl-7">Temuan 07</div>
+            <div class="finding-title" data-id="f-t7">Paradoks Overstock vs Understock Bersamaan</div>
+            <div class="finding-body" data-id="f-b7">Aset yang mandek di barang Overstock menyentuh angka Rp 543.5 juta, padahal kebutuhan biaya restock item critical hanya memerlukan Rp 218.7 juta. Kapital internal perusahaan sebenarnya sangat melimpah namun salah alokasi penempatan.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="content-section">
+  <div class="wrapper">
+    <div class="sec-label" data-id="sec-label-embed">// 07 . Dashboard</div>
+    <h2 class="sec-title" data-id="sec-title-embed">Data Visualization</h2>
+    <div class="sec-body">
+      <p data-id="embed-desc">Berikut adalah tampilan lembar dashboard interaktif live yang tersinkronisasi langsung dari Google Spreadsheet analisis sistem kontrol inventory operasional nasional:</p>
+      <div class="dashboard-container">
+        <iframe src="https://docs.google.com/spreadsheets/d/e/2PACX-1vRVH-sWMqubkjp3t5g0vAkTEUX5hKyk0uKq0dq6KycXqqdJCEZ55I7odAQs-PUSnvoUA37uEdqjA5aZ/pubhtml?gid=1065338707&amp;single=true&amp;widget=true&amp;headers=false"></iframe>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="content-section">
+  <div class="wrapper">
+    <div class="sec-label" data-id="sec-label-7">// 08 . Recommendations</div>
+    <h2 class="sec-title" data-id="sec-title-7">Rekomendasi Aksi Taktikal Bisnis</h2>
+    <div class="sec-body">
+      <p data-id="rec-intro">Berdasarkan insight analisis di atas, berikut adalah 4 pilar strategi operasional yang direkomendasikan untuk segera diterapkan oleh manajemen GudangKu Indonesia:</p>
+      
+      <div class="rec-grid">
+        <div class="rec-card">
+          <div class="rec-num">01</div>
+          <div class="rec-title" data-id="rec-t1">Eksekusi Segera Reorder Darurat</div>
+          <div class="rec-body" data-id="rec-b1">Prioritaskan pembelian ulang untuk <strong>39 SKU berstatus CRITICAL</strong> hari ini juga. Fokuskan negosiasi pada supplier <strong>SUP-004</strong> dan <strong>SUP-003</strong>, serta tambahkan volume buffer stok sebesar 50% guna mengantisipasi peak season Lebaran.</div>
+        </div>
+        <div class="rec-card">
+          <div class="rec-num">02</div>
+          <div class="rec-title" data-id="rec-t2">Implementasi Automated Stock Alert</div>
+          <div class="rec-body" data-id="rec-b2">Gantikan spreadsheet manual dengan dashboard berbasis threshold otomatis (Critical & Warning). Integrasikan fitur notifikasi langsung kepada tim procurement dan lengkapi dengan tombol optimasi khusus bernama <strong>"Lebaran Mode"</strong>.</div>
+        </div>
+        <div class="rec-card">
+          <div class="rec-num">03</div>
+          <div class="rec-title" data-id="rec-t3">Mitigasi Risiko & Diversifikasi Supplier</div>
+          <div class="rec-body" data-id="rec-b3">Naikkan kuota pemeliharaan safety stock untuk produk yang bersumber dari rekanan berisiko tinggi. Jalankan strategi diversifikasi vendor pendukung serta percepat jadwal order bagi supplier dengan tingkat variasi lead time tinggi.</div>
+        </div>
+        <div class="rec-card">
+          <div class="rec-num">04</div>
+          <div class="rec-title" data-id="rec-t4">Audit Finansial & Redistribusi Overstock</div>
+          <div class="rec-body" data-id="rec-b4">Lakukan mutasi pemindahan barang overstock antar gudang domestik secara proaktif. Manfaatkan skema bundling promo potongan harga untuk mempercepat likuidasi barang mandek, dan kunci batas atas pengadaan barang lewat sistem <strong>MaxStock</strong>.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="content-section">
+  <div class="wrapper">
+    <div class="doc-section">
+      <div class="doc-section-title" data-id="doc-section-title">// Project Documents & Artefak Analisis</div>
+      <div class="sec-body" style="margin-bottom: 1.5rem;">
+        <p data-id="doc-p">Seluruh proses pengolahan data, formula matematis, hingga penyusunan visualisasi di dashboard interaktif disajikan secara transparan dan dapat diakses melalui tautan resmi di bawah ini:</p>
+      </div>
+      <div class="doc-links">
+        <a href="https://docs.google.com/spreadsheets/d/1B-os3eVW00Y4lguJjFlwRQtpZCH9CpDtmklgIjajhuk/edit?usp=sharing" target="_blank" rel="noopener" class="doc-link-card">
+          <div class="doc-link-icon">📊</div>
+          <div>
+            <div class="doc-link-type" data-id="doc1-type">Google Sheets</div>
+            <div class="doc-link-name" data-id="doc1-name">The Inventory Control System (Full Analysis)</div>
+          </div>
+          <div class="doc-link-arrow">→</div>
+        </a>
+        <a href="https://canva.link/y3wyabbjuzvhjk6" target="_blank" rel="noopener" class="doc-link-card">
+          <div class="doc-link-icon">🖥️</div>
+          <div>
+            <div class="doc-link-type" data-id="doc2-type">Canva Presentation</div>
+            <div class="doc-link-name" data-id="doc2-name">Inventory Control Deck — Q1 2026</div>
+          </div>
+          <div class="doc-link-arrow">→</div>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="case-footer">
+  <div class="footer-copy" data-id="footer-copy">© 2026 SAILY ROSHINA AYU VIDIANA. ALL RIGHTS RESERVED.</div>
+  <a href="#" class="footer-back">← <span data-id="footer-back">KEMBALI KE PORTFOLIO</span></a>
+</footer>
+
+<script>
+const T = {
+  id: {
+    'nav-back': 'KEMBALI KE PORTFOLIO',
+    'hero-eyebrow': 'Inventory · Supply Chain · Data Analyst',
+    'case-title': 'Inventory Control System Analysis',
+    'case-subtitle': 'GudangKu Indonesia · Q1 2026 Stock Analysis',
+    'meta-label-1': 'Perusahaan', 'meta-val-1': 'GudangKu Indonesia',
+    'meta-label-2': 'Industri', 'meta-val-2': 'Distribution & Supply Chain',
+    'meta-label-3': 'Periode', 'meta-val-3': 'Q1 2026 (Pre-Lebaran)',
+    'meta-label-4': 'Tools', 'meta-val-4': 'Google Sheets',
+    'meta-label-5': 'Role', 'meta-val-5': 'Data Analyst',
+    'hero-desc-1': 'Menjelang Lebaran 2026, GudangKu menghadapi lonjakan permintaan hingga 60% di kategori tertentu. Namun, sistem monitoring inventory masih dilakukan secara manual oleh Warehouse Manager, menyebabkan risiko keterlambatan reorder, stockout, dan alokasi stok yang tidak efisien.',
+    'hero-desc-2': 'Project ini berfokus pada membangun sistem analisis inventory berbasis data untuk mengidentifikasi risiko stockout, mengevaluasi performa supplier, dan mengoptimalkan strategi reorder sebelum periode peak season.',
+    'btn-dashboard': 'Buka Google Sheets',
+    'btn-slides': 'Lihat Presentasi',
+    'kpi-1': 'Total SKU Aktif', 'kpi-2': 'Total Inventory Value', 'kpi-3': 'SKU Di Bawah ROP', 'kpi-4': 'Kondisi CRITICAL (11.3%)', 'kpi-5': 'Overstock Value Risk',
+    'sec-label-1': '// 01 . Overview', 'sec-title-1': 'Project Overview & Konteks Bisnis',
+    'overview-p1': 'Project ini mensimulasikan peran Data Analyst dalam membantu tim operasional GudangKu mengambil keputusan inventory yang kritikal menjelang peak season. Analisis dilakukan secara end-to-end mulai dari eksplorasi data, identifikasi masalah operasional, hingga penyusunan rekomendasi strategis berbasis data.',
+    'overview-sub-1': 'Business Context',
+    'overview-sub-p1': 'GudangKu Indonesia adalah perusahaan distribusi consumer goods dengan 3 gudang utama (Jakarta Pusat, Surabaya Jawa Timur, dan Medan Sumatera Utara). Perusahaan mengelola ratusan SKU aktif dari berbagai kategori produk seperti Food & Beverage, Personal Care, Home Care, Baby Products, dan Snacks.',
+    'overview-sub-p2': 'Setiap kategori memiliki pola demand, margin keuntungan, dan lead time supplier yang berbeda, sehingga strategi reorder tidak bisa disamaratakan.',
+    'overview-sub-2': 'Konteks Peak Season (Lebaran 2026)',
+    'overview-sub-p3': 'Menjelang Lebaran, demand melonjak drastis sebesar 40–60% khusus untuk kategori F&B dan Snacks. Dengan lead time dari pihak supplier yang berkisar antara 3–14 hari, pemesanan stok ideal harus dilakukan 2–3 minggu sebelum Ramadan.',
+    'overview-sub-p4': 'Keterlambatan keputusan reorder bahkan hanya dalam 1 hari berpotensi mengakibatkan kehilangan momentum penjualan (stockout) pada momen krusial ini.',
+    'sec-label-2': '// 02 . Problem Statement', 'sec-title-2': 'Masalah Utama & Dampak Finansial',
+    'problem-p1': 'Sistem inventory GudangKu saat ini masih sangat bergantung pada monitoring manual menggunakan spreadsheet terfragmentasi. Mengelola 400+ SKU di 3 lokasi gudang dengan pendekatan ini terbukti tidak scalable, rentan terhadap human error, dan tidak memiliki sistem penanda bahaya dini (alert system).',
+    'issue-t1': 'Delayed Reordering Risk', 'issue-d1': 'Risiko kehabisan pasokan barang yang tinggi karena proses pemesanan ulang yang lambat akibat sistem manual.',
+    'issue-t2': 'No Early Warning', 'issue-d2': 'Absennya indikator otomatis atau Reorder Point (ROP) alert untuk mendeteksi kapan stok harus segera dibeli kembali.',
+    'issue-t3': 'Data Terfragmentasi', 'issue-d3': 'Pemisahan data inventory antar warehouse (Jakarta, Surabaya, Medan) menyulitkan sinkronisasi stok nasional.',
+    'problem-p2': 'Business Impact: Terjadinya Stockout mengakibatkan hilangnya potensi revenue instan dan memicu kepindahan pelanggan ke kompetitor. Di sisi lain, penumpukan stok berlebih (Overstock) mengunci modal kerja operasional serta memperbesar risiko kerusakan/kedaluwarsa barang. Secara komparatif bisnis, biaya akibat stockout jauh lebih mahal daripada biaya penataan ruang simpan.',
+    'sec-label-3': '// 03 . Scope & Questions', 'sec-title-3': 'Pertanyaan Bisnis & Ruang Lingkup',
+    'scope-p1': 'Analisis ini dibatasi pada pemantauan terhadap 346 SKU aktif di 3 lokasi warehouse utama menggunakan kerangka perhitungan matematis Reorder Point (ROP), parameter stock ratio, serta analisis stabilitas lead time pengiriman barang.',
+    'bq-q1': 'SKU mana saja yang memiliki risiko stockout paling tinggi dalam waktu dekat?', 'bq-p1': 'Tujuan: Memberikan daftar prioritas restock darurat bagi tim procurement sebelum peak season tiba.',
+    'bq-q2': 'Supplier mana yang memiliki performa pengiriman tidak andal (lead time variability)?', 'bq-p2': 'Tujuan: Memitigasi risiko hambatan supply chain dari pihak ketiga.',
+    'bq-q3': 'Apakah terjadi fenomena overstock dan bagaimana tingkat efisiensi inventory saat ini?', 'bq-p3': 'Tujuan: Mengidentifikasi pemborosan kapital dan ruang simpan di gudang spesifik.',
+    'sec-label-4': '// 04 . Objectives & Urgency', 'sec-title-4': 'Tujuan Strategis & Tingkat Urgensi',
+    'obj-p1': 'Sasaran utama proyek ini adalah mengidentifikasi SKU berisiko tinggi secara akurat, meningkatkan efisiensi distribusi alokasi antar gudang, serta memberikan panduan reorder otomatis berbasis metrik penjualan nyata.',
+    'urgency-label': '🚨 WHY IT MATTERS NOW', 'urgency-text': 'Dengan momentum Lebaran 2026 yang sudah di depan mata dan rentang waktu pengiriman barang (lead time) supplier mencapai hingga 14 hari, ini bukan lagi pembicaraan strategi jangka panjang. Ini adalah serangkaian keputusan operasional taktikal yang wajib dieksekusi SEKARANG JUGA.',
+    'sec-label-5': '// 05 . Pipeline Workflow', 'sec-title-5': 'Arsitektur Data & Alur Kerja Sistem',
+    'pipeline-p1': 'Pipeline pengolahan data dikembangkan secara terstruktur untuk menjamin validitas hasil keputusan dari total nilai aset inventory berkisar ± Rp 3.0 Miliar.',
+    'step-t1': 'Data Cleaning & Validation', 'step-d1': 'Pembersihan data mentah, meliputi data duplikat, nilai negatif stock, data di luar rentang periode waktu analisis (tanggal), zero unit price, dan data hilang (missing value).',
+    'step-t2': 'Perhitungan Formula Stock', 'step-d2': 'Stock Ratio — CurrentStock / ReorderPoint<br>Alert Status — CRITICAL (&lt;0.5), WARNING (0.5-1.0), OK (1.0-2.0), OVERSTOCK (&gt;2.0)<br>Days Until Stockout — CurrentStock / DailyAvgSales (atau N/A jika sales = 0)',
+    'step-t3': 'Klasifikasi Alert Status System', 'step-d3': 'Automated classification ke dalam 4 kondisi status logis: OK, WARNING, CRITICAL, dan OVERSTOCK.',
+    'step-t4': 'Analisis Risiko Supplier', 'step-d4': 'Pengukuran konsistensi waktu kirim supplier menggunakan standar deviasi (STDEV) dan Koefisien Variasi (CV) lead time.',
+    'step-t5': 'Dashboarding & Rekomendasi', 'step-d5': 'Visualisasi interaktif temuan ke dalam dashboard performa dan perumusan aksi mitigasi bisnis.',
+    'schema-title': 'Data yang Diproses',
+    'sec-label-6': '// 06 . Executive Summary & Insights', 'sec-title-6': 'Ringkasan Eksekutif & Temuan Analisis',
+    'finding-intro-1': 'Data menunjukkan fakta mengejutkan: 41.62% SKU aktif berada di bawah batas Reorder Point (ROP), dengan 39 SKU (11.3%) di antaranya berada dalam status CRITICAL yang membutuhkan suntikan dana reorder darurat sebesar Rp 218.7 Juta. Di saat yang sama, terdapat dana idle sebesar Rp 543.5 Juta yang terperangkap dalam produk berkategori OVERSTOCK.',
+    'finding-intro-2': 'Kesimpulan Utama: Masalah utama GudangKu saat ini bukanlah kekurangan modal atau stok secara total, melainkan akibat distribusi alokasi stok yang tidak efisien dan tidak merata.',
+    'f-lbl-1': 'Temuan 01', 'f-t1': 'Kondisi Understocked Secara Sistemik', 'f-b1': 'Sebanyak 41.1% SKU terjebak di zona WARNING dan CRITICAL. Ini membuktikan bahwa mekanisme monitoring manual membuat sistem pemesanan ulang barang tidak berjalan optimal.',
+    'f-lbl-2': 'Temuan 02', 'f-t2': 'Personal Care Adalah Kategori Paling Berisiko', 'f-b2': '52.1% SKU di kategori Personal Care bernilai di bawah ROP. Produk ini tergolong fast-moving, namun sayangnya tidak ter-cover dengan perencanaan reorder yang aman.',
+    'f-lbl-3': 'Temuan 03', 'f-t3': 'Pola Masalah Identik di Semua Gudang', 'f-b3': 'Persentase item kritis di Jakarta, Surabaya, maupun Medan hampir serupa (~41%). Hal ini menandakan bahwa akar masalah bukan berada pada operasional lokal gudang tertentu, melainkan kegagalan sistem terpusat.',
+    'f-lbl-4': 'Temuan 04', 'f-t4': '39 SKU Status CRITICAL Butuh Tindakan Hari Ini', 'f-b4': '1 SKU tercatat sudah stockout total, dan 14 SKU lainnya akan habis dalam waktu 1 hari saja. Mengingat lead time minimal supplier adalah 3 hari, pemesanan jalur normal dipastikan terlambat dan membutuhkan eskalasi kilat.',
+    'f-lbl-5': 'Temuan 05', 'f-t5': 'Simulasi Risiko Lonjakan Permintaan Lebaran', 'f-b5': 'Apabila demand naik sebesar 50% saat puncak Lebaran, jumlah SKU berstatus CRITICAL akan meroket tajam dari 21.7% menjadi 78.3%. Jendela waktu koreksi sebelum seluruh inventory lumpuh sangatlah sempit.',
+    'f-lbl-6': 'Temuan 06', 'f-t6': 'Analisis Kerentanan Supplier (Supplier Risk)',
+    'f-b6-li1': 'SUP-004: Status High Risk karena memiliki nilai CV tertinggi sekaligus memegang dampak volume pasokan yang masif.',
+    'f-b6-li2': 'SUP-005 & SUP-007: Menunjukkan variabilitas lead time pengiriman barang paling tidak konsisten.',
+    'f-b6-li3': 'SUP-003: Sangat konsisten dalam mengirimkan barang, tetapi tingkat ketergantungan (dependency) operasional GudangKu terhadapnya terlampau tinggi.',
+    'f-lbl-7': 'Temuan 07', 'f-t7': 'Paradoks Overstock vs Understock Bersamaan', 'f-b7': 'Aset yang mandek di barang Overstock menyentuh angka Rp 543.5 juta, padahal kebutuhan biaya restock item critical hanya memerlukan Rp 218.7 juta. Kapital internal perusahaan sebenarnya sangat melimpah namun salah alokasi penempatan.',
+    'sec-label-embed': '// 07 . Dashboard', 'sec-title-embed': 'Data Visualization',
+    'embed-desc': 'Berikut adalah tampilan lembar dashboard interaktif live yang tersinkronisasi langsung dari Google Spreadsheet analisis sistem kontrol inventory operasional nasional:',
+    'sec-label-7': '// 08 . Recommendations', 'sec-title-7': 'Rekomendasi Aksi Taktikal Bisnis',
+    'rec-intro': 'Berdasarkan insight analisis di atas, berikut adalah 4 pilar strategi operasional yang direkomendasikan untuk segera diterapkan oleh manajemen GudangKu Indonesia:',
+    'rec-t1': 'Eksekusi Segera Reorder Darurat', 'rec-b1': 'Prioritaskan pembelian ulang untuk 39 SKU berstatus CRITICAL hari ini juga. Fokuskan negosiasi pada supplier SUP-004 dan SUP-003, serta tambahkan volume buffer stok sebesar 50% guna mengantisipasi peak season Lebaran.',
+    'rec-t2': 'Implementasi Automated Stock Alert', 'rec-b2': 'Gantikan spreadsheet manual dengan dashboard berbasis threshold otomatis (Critical & Warning). Integrasikan fitur notifikasi langsung kepada tim procurement dan lengkapi dengan tombol optimasi khusus bernama "Lebaran Mode".',
+    'rec-t3': 'Mitigasi Risiko & Diversifikasi Supplier', 'rec-b3': 'Naikkan kuota pemeliharaan safety stock untuk produk yang bersumber dari rekanan berisiko tinggi. Jalankan strategi diversifikasi vendor pendukung serta percepat jadwal order bagi supplier dengan tingkat variasi lead time tinggi.',
+    'rec-t4': 'Audit Finansial & Redistribusi Overstock', 'rec-b4': 'Lakukan mutasi pemindahan barang overstock antar gudang domestik secara proaktif. Manfaatkan skema bundling promo potongan harga untuk mempercepat likuidasi barang mandek, dan kunci batas atas pengadaan barang lewat sistem MaxStock.',
+    'doc-section-title': '// Project Documents & Artefak Analisis',
+    'doc-p': 'Seluruh proses pengolahan data, formula matematis, hingga penyusunan visualisasi di dashboard interaktif disajikan secara transparan dan dapat diakses melalui tautan resmi di bawah ini:',
+    'doc1-type': 'Google Sheets', 'doc1-name': 'The Inventory Control System (Full Analysis)',
+    'doc2-type': 'Canva Presentation', 'doc2-name': 'Inventory Control Deck — Q1 2026',
+    'footer-copy': '© 2026 SAILY ROSHINA AYU VIDIANA. ALL RIGHTS RESERVED.',
+    'footer-back': 'KEMBALI KE PORTFOLIO'
+  },
+  en: {
+    'nav-back': 'BACK TO PORTFOLIO',
+    'hero-eyebrow': 'Inventory · Supply Chain · Data Analyst',
+    'case-title': 'Inventory Control System Analysis',
+    'case-subtitle': 'GudangKu Indonesia · Q1 2026 Stock Analysis',
+    'meta-label-1': 'Company', 'meta-val-1': 'GudangKu Indonesia',
+    'meta-label-2': 'Industry', 'meta-val-2': 'Distribution & Supply Chain',
+    'meta-label-3': 'Period', 'meta-val-3': 'Q1 2026 (Pre-Lebaran)',
+    'meta-label-4': 'Tools', 'meta-val-4': 'Google Sheets',
+    'meta-label-5': 'Role', 'meta-val-5': 'Data Analyst',
+    'hero-desc-1': 'Approaching Lebaran 2026, GudangKu faces demand spikes up to 60% in specific categories. However, the inventory monitoring system is still done manually by the Warehouse Manager, causing risks of reorder delays, stockouts, and inefficient stock allocation.',
+    'hero-desc-2': 'This project focuses on building a data-driven inventory analysis system to identify stockout risks, evaluate supplier performance, and optimize reorder strategies before the peak season.',
+    'btn-dashboard': 'Open Google Sheets',
+    'btn-slides': 'View Presentation',
+    'kpi-1': 'Total Active SKUs', 'kpi-2': 'Total Inventory Value', 'kpi-3': 'SKUs Below ROP', 'kpi-4': 'CRITICAL Condition (11.3%)', 'kpi-5': 'Overstock Value Risk',
+    'sec-label-1': '// 01 . Overview', 'sec-title-1': 'Project Overview & Business Context',
+    'overview-p1': 'This project simulates the role of a Data Analyst in helping GudangKu\'s operations team make critical inventory decisions ahead of the peak season. The analysis is carried out end-to-end starting from data exploration, operational issue identification, to formulating data-driven strategic recommendations.',
+    'overview-sub-1': 'Business Context',
+    'overview-sub-p1': 'GudangKu Indonesia is a consumer goods distribution company with 3 main warehouses (Central Jakarta, Surabaya East Java, and Medan North Sumatra). The company manages hundreds of active SKUs from various product categories such as Food & Beverage, Personal Care, Home Care, Baby Products, and Snacks.',
+    'overview-sub-p2': 'Each category has different demand patterns, profit margins, and supplier lead times, meaning reorder strategies cannot be generalized.',
+    'overview-sub-2': 'Peak Season Context (Lebaran 2026)',
+    'overview-sub-p3': 'Ahead of Lebaran, demand jumps drastically by 40–60% specifically for the F&B and Snacks categories. With supplier lead times ranging between 3–14 days, ideal stock ordering must be conducted 2–3 weeks before Ramadan.',
+    'overview-sub-p4': 'A single day delay in reorder decisions could potentially result in missing instant sales momentum (stockout) during this crucial period.',
+    'sec-label-2': '// 02 . Problem Statement', 'sec-title-2': 'Core Problems & Financial Impact',
+    'problem-p1': 'GudangKu\'s inventory system currently relies heavily on manual monitoring via fragmented spreadsheets. Managing 400+ SKUs across 3 warehouse locations with this approach is unscalable, prone to human error, and lacks an early warning alert system.',
+    'issue-t1': 'Delayed Reordering Risk', 'issue-d1': 'High risk of inventory depletion due to sluggish reorder processing under the manual system.',
+    'issue-t2': 'No Early Warning', 'issue-d2': 'Absennya indikator otomatis atau Reorder Point (ROP) alert untuk mendeteksi kapan stok harus segera dibeli kembali.',
+    'issue-t3': 'Fragmented Data', 'issue-d3': 'Isolation of inventory logs across warehouses (Jakarta, Surabaya, Informed, Medan) hampers national stock synchronization.',
+    'problem-p2': 'Business Impact: Stockouts cause immediate revenue loss and push customers to competitors. Conversely, Overstock traps operational working capital and intensifies risks of product expiration/damage. Comparatively, stockouts are far more expensive for the business than space optimization costs.',
+    'sec-label-3': '// 03 . Scope & Questions', 'sec-title-3': 'Business Questions & Analytical Scope',
+    'scope-p1': 'This analysis is limited to monitoring 346 active SKUs across 3 primary warehouse locations using Reorder Point (ROP) calculations, stock ratio boundaries, and supplier lead time stability metrics.',
+    'bq-q1': 'Which SKUs carry the highest risk of running out of stock in the near future?', 'bq-p1': 'Goal: Provide an emergency restock priority list for the procurement team before the peak season.',
+    'bq-q2': 'Which suppliers show unreliable delivery behaviors (lead time variability)?', 'bq-p2': 'Goal: Mitigate supply chain bottleneck risks originating from third-party vendors.',
+    'bq-q3': 'Is there an overstock phenomenon and what is the current inventory efficiency level?', 'bq-p3': 'Goal: Pinpoint capital waste and dead stock storage in specific warehouses.',
+    'sec-label-4': '// 04 . Objectives & Urgency', 'sec-title-4': 'Strategic Objectives & Urgency Level',
+    'obj-p1': 'The primary objective of this project is to accurately pinpoint high-risk SKUs, improve inter-warehouse allocation efficiency, and deliver automated reorder guidelines backed by actual sales metrics.',
+    'urgency-label': '🚨 WHY IT MATTERS NOW', 'urgency-text': 'With the Lebaran 2026 momentum just around the corner and supplier lead times stretching up to 14 days, this is no longer a long-term strategic discussion. This is a series of tactical operational decisions that must be executed RIGHT NOW.',
+    'sec-label-5': '// 05 . Pipeline Workflow', 'sec-title-5': 'Data Architecture & System Workflow',
+    'pipeline-p1': 'The data processing pipeline is structured to guarantee the validity of decisions governing a total inventory asset value of around ± Rp 3.0 Billion.',
+    'step-t1': 'Data Cleaning & Validation', 'step-d1': 'Cleaning of raw data, covering duplicate logs, negative stock values, records outside the target analysis timeline (dates), zero unit prices, and missing values.',
+    'step-t2': 'Stock Formula Calculations', 'step-d2': 'Stock Ratio — CurrentStock / ReorderPoint<br>Alert Status — CRITICAL (&lt;0.5), WARNING (0.5-1.0), OK (1.0-2.0), OVERSTOCK (&gt;2.0)<br>Days Until Stockout — CurrentStock / DailyAvgSales (or N/A if sales = 0)',
+    'step-t3': 'Alert Status System Classification', 'step-d3': 'Automated classification into 4 logic-driven statuses: OK, WARNING, CRITICAL, and OVERSTOCK.',
+    'step-t4': 'Supplier Risk Analysis', 'step-d4': 'Measuring supplier delivery consistency through standard deviation (STDEV) and Coefficient of Variation (CV) of lead times.',
+    'step-t5': 'Dashboarding & Recommendations', 'step-d5': 'Interactive visualization of findings in a performance dashboard and formulating operational mitigations.',
+    'schema-title': 'Processed Data',
+    'sec-label-6': '// 06 . Executive Summary & Insights', 'sec-title-6': 'Executive Summary & Analytical Insights',
+    'finding-intro-1': 'The data reveals an alarming reality: 41.62% of active SKUs are currently below their Reorder Point (ROP), with 39 SKUs (11.3%) sitting in a CRITICAL state that demands an immediate emergency restock budget of Rp 218.7 Million. Simultaneously, Rp 543.5 Million in its idle funds is trapped within OVERSTOCK products.',
+    'finding-intro-2': 'Core Conclusion: GudangKu\'s primary bottleneck is not an absolute shortage of capital or stock, but rather highly inefficient and uneven stock distribution.',
+    'f-lbl-1': 'Insight 01', 'f-t1': 'Systemic Understocking Condition', 'f-b1': 'A total of 41.1% of SKUs are trapped in WARNING and CRITICAL zones. This proves that manual monitoring fails to execute replenishment orders optimally.',
+    'f-lbl-2': 'Insight 02', 'f-t2': 'Personal Care is the Highest Risk Category', 'f-b2': '52.1% of Personal Care SKUs are below their ROP. These items are fast-moving but remain uncovered by safe reorder padding.',
+    'f-lbl-3': 'Insight 03', 'f-t3': 'Identical Problem Patterns Across All Warehouses', 'f-b3': 'Critical item ratios across Jakarta, Surabaya, and Medan are nearly identical (~41%). This indicates a failure in centralized systems rather than localized warehouse operations.',
+    'f-lbl-4': 'Insight 04', 'f-t4': '39 CRITICAL SKUs Require Immediate Action Today', 'f-b4': '1 SKU is already completely out of stock, and 14 others will deplete within 24 hours. Given a minimum supplier lead time of 3 days, standard ordering is already too late and demands rapid escalation.',
+    'f-lbl-5': 'Insight 05', 'f-t5': 'Lebaran Demand Spike Risk Simulation', 'f-b5': 'If demand surges by 50% during the peak of Lebaran, the proportion of CRITICAL SKUs will skyrocket from 21.7% to 78.3%. The time window to correct this before total inventory paralysis is extremely narrow.',
+    'f-lbl-6': 'Insight 06', 'f-t6': 'Supplier Vulnerability Analysis (Supplier Risk)',
+    'f-b6-li1': 'SUP-004: Marked High Risk due to the highest CV combined with a massive supply volume impact.',
+    'f-b6-li2': 'SUP-005 & SUP-007: Exhibit the least consistent lead time delivery patterns.',
+    'f-b6-li3': 'SUP-003: Highly consistent in delivery, yet GudangKu\'s operational dependency on this single vendor is dangerously high.',
+    'f-lbl-7': 'Insight 07', 'f-t7': 'The Overstock vs Understock Paradox', 'f-b7': 'While Rp 543.5 million is stagnating in overstocked items, critical item replenishment only requires Rp 218.7 million. Internal capital is abundant but poorly allocated.',
+    'sec-label-embed': '// 07 . Dashboard', 'sec-title-embed': 'Data Visualization',
+    'embed-desc': 'Below is the interactive live dashboard embedded directly from the Google Spreadsheet inventory control data system analysis:',
+    'sec-label-7': '// 08 . Recommendations', 'sec-title-7': 'Tactical Business Action Recommendations',
+    'rec-intro': 'Based on the analytical insights above, the following 4 operational pillars are recommended for immediate execution by GudangKu Indonesia\'s management:',
+    'rec-t1': 'Execute Immediate Emergency Reorders', 'rec-b1': 'Prioritize procurement for the 39 CRITICAL SKUs today. Focus negotiations on suppliers SUP-004 and SUP-003, and inject a 50% safety buffer to handle peak Lebaran demand.',
+    'rec-t2': 'Deploy Automated Stock Alerts', 'rec-b2': 'Replace manual sheets with an automated threshold dashboard (Critical & Warning). Embed instant alerts for procurement teams and include a specialized optimization switch called "Lebaran Mode".',
+    'rec-t3': 'Risk Mitigation & Supplier Diversification', 'rec-b3': 'Raise safety stock quotas for products sourced from high-risk vendors. Roll out secondary backup vendors and pull forward order schedules for suppliers with volatile lead times.',
+    'rec-t4': 'Financial Audit & Overstock Redistribution', 'rec-b4': 'Proactively transfer excess stock between regional warehouses. Utilize promotional bundling to liquidate stagnant goods and hard-code maximum procurement ceilings via the MaxStock system.',
+    'doc-section-title': '// Project Documents & Analysis Artifacts',
+    'doc-p': 'The entire data processing workflow, mathematical formulas, and interactive dashboard visuals are transparently documented and accessible via the official links below:',
+    'doc1-type': 'Google Sheets', 'doc1-name': 'The Inventory Control System (Full Analysis)',
+    'doc2-type': 'Canva Presentation', 'doc2-name': 'Inventory Control Deck — Q1 2026',
+    'footer-copy': '© 2026 SAILY ROSHINA AYU VIDIANA. ALL RIGHTS RESERVED.',
+    'footer-back': 'BACK TO PORTFOLIO'
+  }
+};
+
+let currentLang = localStorage.getItem('lang') || 'id';
+
+function setLang(lang) {
+  if (lang === currentLang) return;
+  currentLang = lang;
+  localStorage.setItem('lang', lang);
+  document.body.classList.add('lang-switching');
+  setTimeout(() => {
+    applyTranslations(lang);
+    document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('active', b.dataset.lang === lang));
+    document.documentElement.lang = lang;
+    document.body.classList.remove('lang-switching');
+  }, 150);
+}
+
+function applyTranslations(lang) {
+  const t = T[lang];
+  document.querySelectorAll('[data-id]').forEach(el => {
+    const key = el.getAttribute('data-id');
+    if (t[key] !== undefined) el.innerHTML = t[key];
+  });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  applyTranslations(currentLang);
+  document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('active', b.dataset.lang === currentLang));
+  document.documentElement.lang = currentLang;
+});
+</script>
+
+</body>
+</html>
