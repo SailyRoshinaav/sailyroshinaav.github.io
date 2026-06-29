@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Financial Forecasting untuk Keputusan Ekspansi — Saily Roshina</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:      #050810;
+  --bg2:     #080d1a;
+  --bg3:     #0d1526;
+  --border:  rgba(99,210,255,0.12);
+  --border2: rgba(99,210,255,0.25);
+  --cyan:    #63d2ff;
+  --violet:  #b57bff;
+  --green:   #39ff8f;
+  --red:     #ff4d4d;
+  --yellow:  #ffc93c;
+  --text:    #e8edf5;
+  --muted:   #7a8ba8;
+  --mono:    'Space Mono', monospace;
+  --sans:    'Space Grotesk', sans-serif;
+}
+
+html { scroll-behavior: smooth; }
+body { background: var(--bg); color: var(--text); font-family: var(--sans); font-size: 16px; line-height: 1.7; overflow-x: hidden; }
+
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.04) 2px, rgba(0,0,0,0.04) 4px);
+  pointer-events: none; z-index: 999;
+}
+
+.grid-bg {
+  position: fixed; inset: 0;
+  background-image: linear-gradient(rgba(99,210,255,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(99,210,255,0.04) 1px, transparent 1px);
+  background-size: 60px 60px; z-index: 0; pointer-events: none;
+}
+.grid-bg::after { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse 70% 50% at 50% 0%, rgba(99,210,255,0.06) 0%, transparent 70%); }
+
+.orb { position: fixed; border-radius: 50%; filter: blur(80px); pointer-events: none; z-index: 0; opacity: 0.1; }
+.orb-1 { width: 500px; height: 500px; background: var(--cyan); top: -200px; left: -100px; }
+.orb-2 { width: 400px; height: 400px; background: var(--violet); bottom: -150px; right: -100px; }
+
+/* NAV */
+nav {
+  position: fixed; top: 0; left: 0; right: 0;
+  display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+  padding: 1rem clamp(1.5rem, 5vw, 5rem);
+  background: rgba(5,8,16,0.85); backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border); z-index: 100;
+}
+.nav-back {
+  font-family: var(--mono); font-size: 0.7rem; color: var(--muted);
+  text-decoration: none; letter-spacing: 0.1em; display: flex; align-items: center; gap: 0.5rem;
+  transition: color 0.2s;
+}
+.nav-back:hover { color: var(--cyan); }
+.nav-logo { font-family: var(--mono); font-size: 0.8rem; color: var(--cyan); text-decoration: none; letter-spacing: 0.1em; }
+
+.nav-right { display: flex; align-items: center; gap: 1rem; }
+.lang-toggle { display: flex; align-items: center; background: var(--bg3); border: 1px solid var(--border2); border-radius: 2px; overflow: hidden; }
+.lang-btn { font-family: var(--mono); font-size: 0.62rem; font-weight: 700; letter-spacing: 0.1em; padding: 0.3rem 0.75rem; background: transparent; color: var(--muted); border: none; cursor: pointer; transition: all 0.2s; text-transform: uppercase; }
+.lang-btn.active { background: var(--cyan); color: var(--bg); }
+.lang-btn:not(.active):hover { color: var(--cyan); }
+
+/* LAYOUT */
+.wrapper { max-width: 860px; margin: 0 auto; padding: 0 clamp(1.5rem, 5vw, 4rem); position: relative; z-index: 1; }
+
+/* HERO */
+.case-hero {
+  padding-top: 7rem; padding-bottom: 4rem;
+  border-bottom: 1px solid var(--border);
+  position: relative; z-index: 1;
+}
+.case-hero .wrapper { padding-top: 2rem; padding-bottom: 2rem; }
+
+.case-eyebrow {
+  font-family: var(--mono); font-size: 0.68rem; color: var(--violet);
+  letter-spacing: 0.18em; text-transform: uppercase; margin-bottom: 1.25rem;
+  display: flex; align-items: center; gap: 0.6rem;
+  animation: fadeUp 0.6s ease both;
+}
+.case-eyebrow::before { content: '◆'; font-size: 0.45rem; color: var(--violet); }
+
+.case-title {
+  font-size: clamp(2rem, 5vw, 3.5rem); font-weight: 700;
+  line-height: 1.05; letter-spacing: -0.02em; margin-bottom: 1.5rem;
+  animation: fadeUp 0.6s 0.1s ease both;
+}
+
+.case-subtitle {
+  font-family: var(--mono); font-size: 0.8rem; color: var(--cyan);
+  letter-spacing: 0.06em; margin-bottom: 2rem;
+  animation: fadeUp 0.6s 0.15s ease both;
+}
+
+.case-meta {
+  display: flex; flex-wrap: wrap; gap: 2rem; margin-bottom: 2.5rem;
+  animation: fadeUp 0.6s 0.2s ease both;
+}
+.meta-item { display: flex; flex-direction: column; gap: 0.2rem; }
+.meta-label { font-family: var(--mono); font-size: 0.6rem; color: var(--muted); letter-spacing: 0.14em; text-transform: uppercase; }
+.meta-val { font-size: 0.9rem; font-weight: 500; color: var(--text); }
+
+.hero-pills { display: flex; flex-wrap: wrap; gap: 0.5rem; animation: fadeUp 0.6s 0.25s ease both; }
+.pill {
+  font-family: var(--mono); font-size: 0.62rem; color: var(--muted);
+  border: 1px solid var(--border); padding: 0.25rem 0.7rem;
+  border-radius: 2px; letter-spacing: 0.06em; background: rgba(5,8,16,0.5);
+}
+
+.hero-narrative { margin-top: 2.5rem; font-size: 1.05rem; line-height: 1.8; color: var(--muted); }
+.hero-narrative p { margin-bottom: 1rem; }
+.hero-narrative strong { color: var(--text); }
+
+/* DOC BUTTONS */
+.doc-buttons {
+  display: flex; flex-direction: row; flex-wrap: wrap; gap: 1rem; margin-top: 2.5rem;
+  animation: fadeUp 0.6s 0.3s ease both; align-items: center;
+}
+.doc-btn {
+  display: inline-flex; align-items: center; gap: 0.6rem;
+  padding: 0.8rem 1.5rem;
+  font-family: var(--mono); font-size: 0.72rem; font-weight: 700;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  text-decoration: none; border: none; cursor: pointer;
+  transition: all 0.25s; clip-path: polygon(6px 0%, 100% 0%, calc(100% - 6px) 100%, 0% 100%);
+}
+.doc-btn-primary { background: var(--cyan); color: var(--bg); }
+.doc-btn-primary:hover { box-shadow: 0 0 25px rgba(99,210,255,0.45); transform: translateY(-2px); }
+.doc-btn-ghost { background: transparent; color: var(--violet); border: 1px solid rgba(181,123,255,0.35); }
+.doc-btn-ghost:hover { background: rgba(181,123,255,0.06); border-color: var(--violet); box-shadow: 0 0 20px rgba(181,123,255,0.12); transform: translateY(-2px); }
+
+/* KPI STRIP */
+.kpi-strip {
+  background: var(--bg2); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+  position: relative; z-index: 1;
+}
+.kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 1.5px; background: var(--border); }
+.kpi-card { background: var(--bg2); padding: 1.75rem 1.25rem; text-align: center; }
+.kpi-val { font-family: var(--mono); font-size: 1.5rem; font-weight: 700; line-height: 1; margin-bottom: 0.4rem; }
+.kpi-label { font-size: 0.7rem; color: var(--muted); line-height: 1.4; }
+.cyan { color: var(--cyan); text-shadow: 0 0 20px rgba(99,210,255,0.3); }
+.red { color: var(--red); text-shadow: 0 0 20px rgba(255,77,77,0.3); }
+.yellow { color: var(--yellow); text-shadow: 0 0 20px rgba(255,201,60,0.3); }
+.green { color: var(--green); text-shadow: 0 0 20px rgba(57,255,143,0.3); }
+.violet { color: var(--violet); text-shadow: 0 0 20px rgba(181,123,255,0.3); }
+
+/* CONTENT SECTIONS */
+.content-section { padding: 4rem 0; border-bottom: 1px solid var(--border); position: relative; z-index: 1; }
+.content-section:last-child { border-bottom: none; }
+
+.sec-label { font-family: var(--mono); font-size: 0.62rem; color: var(--cyan); letter-spacing: 0.2em; text-transform: uppercase; margin-bottom: 0.5rem; opacity: 0.7; }
+.sec-title { font-size: clamp(1.4rem, 3vw, 2rem); font-weight: 700; letter-spacing: -0.02em; line-height: 1.15; margin-bottom: 1.25rem; }
+.sec-body { color: var(--muted); font-size: 0.95rem; line-height: 1.8; }
+.sec-body p + p { margin-top: 1rem; }
+.sec-body strong { color: var(--text); font-weight: 500; }
+.sec-body ul { padding-left: 1.25rem; margin-top: 0.75rem; margin-bottom: 0.75rem; }
+.sec-body ul li { margin-bottom: 0.35rem; }
+
+/* TWO COL */
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 2.5rem; align-items: start; }
+
+/* ISSUE CARDS */
+.issue-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5px; background: var(--border); border: 1px solid var(--border); margin-top: 2rem; }
+.issue-card { background: var(--bg); padding: 1.5rem; transition: background 0.2s; }
+.issue-card:hover { background: var(--bg3); }
+.issue-num { font-family: var(--mono); font-size: 0.58rem; color: var(--cyan); letter-spacing: 0.2em; margin-bottom: 0.75rem; opacity: 0.6; }
+.issue-title { font-size: 0.95rem; font-weight: 600; margin-bottom: 0.4rem; color: var(--text); }
+.issue-desc { font-size: 0.82rem; color: var(--muted); line-height: 1.55; }
+
+/* BUSINESS QUESTIONS */
+.bq-list { display: flex; flex-direction: column; gap: 1px; background: var(--border); border: 1px solid var(--border); margin-top: 2rem; }
+.bq-item { background: var(--bg2); padding: 1.5rem 2rem; display: flex; gap: 1.25rem; align-items: flex-start; }
+.bq-num { font-family: var(--mono); font-size: 0.65rem; color: var(--cyan); background: rgba(99,210,255,0.08); border: 1px solid var(--border2); width: 28px; height: 28px; border-radius: 2px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 2px; }
+.bq-q { font-size: 0.95rem; font-weight: 600; margin-bottom: 0.3rem; color: var(--text); }
+.bq-purpose { font-size: 0.82rem; color: var(--muted); }
+
+/* METHODOLOGY STEPS */
+.method-steps { display: flex; flex-direction: column; gap: 1.5px; background: var(--border); border: 1px solid var(--border); margin-top: 2rem; }
+.method-step { background: var(--bg); padding: 1.5rem 2rem; display: grid; grid-template-columns: 2rem 1fr; gap: 1rem; align-items: start; transition: background 0.2s; }
+.method-step:hover { background: var(--bg3); }
+.step-num { font-family: var(--mono); font-size: 0.65rem; color: var(--cyan); opacity: 0.6; margin-top: 0.15em; }
+.step-title { font-size: 0.95rem; font-weight: 600; margin-bottom: 0.3rem; color: var(--text); }
+.step-desc { font-size: 0.82rem; color: var(--muted); line-height: 1.55; }
+
+/* DATA SCHEMA STICKER */
+.schema-box { background: var(--bg3); border: 1px solid var(--border); padding: 1.5rem; margin-top: 1.5rem; }
+.schema-title { font-family: var(--mono); font-size: 0.65rem; color: var(--violet); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 0.75rem; }
+.schema-tags { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+.tag-code { font-family: var(--mono); font-size: 0.7rem; background: rgba(5,8,16,0.6); border: 1px solid var(--border); padding: 0.15rem 0.45rem; color: var(--cyan); border-radius: 2px; }
+
+/* FINDINGS */
+.finding-grid { display: flex; flex-direction: column; gap: 1rem; margin-top: 2rem; }
+.finding-card {
+  background: var(--bg2); border: 1px solid var(--border);
+  padding: 1.75rem 2rem;
+  display: grid; grid-template-columns: auto 1fr; gap: 1.25rem; align-items: start;
+  transition: border-color 0.2s;
+}
+.finding-card:hover { border-color: var(--border2); }
+.finding-icon { font-size: 1.5rem; line-height: 1; }
+.finding-label { font-family: var(--mono); font-size: 0.58rem; color: var(--violet); letter-spacing: 0.14em; text-transform: uppercase; margin-bottom: 0.35rem; }
+.finding-title { font-size: 1rem; font-weight: 600; margin-bottom: 0.5rem; color: var(--text); }
+.finding-body { font-size: 0.88rem; color: var(--muted); line-height: 1.65; }
+.finding-body strong { color: var(--text); }
+
+/* RESPONSIVE IFRAME CONTAINER FOR DASHBOARD */
+.dashboard-container {
+  position: relative;
+  width: 100%;
+  padding-top: 56.25%; /* 16:9 Aspect Ratio */
+  margin-top: 1.5rem;
+  border: 1px solid var(--border2);
+  background: var(--bg2);
+  border-radius: 2px;
+}
+.dashboard-container iframe {
+  position: absolute;
+  top: 0; left: 0; bottom: 0; right: 0;
+  width: 100%; height: 100%;
+  border: none;
+}
+
+/* RECOMMENDATION CARDS */
+.rec-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5px; background: var(--border); border: 1px solid var(--border); margin-top: 2rem; }
+.rec-card { background: var(--bg); padding: 2rem; transition: background 0.2s; }
+.rec-card:hover { background: var(--bg3); }
+.rec-num { font-family: var(--mono); font-size: 0.58rem; color: var(--cyan); letter-spacing: 0.2em; margin-bottom: 0.6rem; opacity: 0.6; }
+.rec-title { font-size: 1rem; font-weight: 600; margin-bottom: 0.5rem; color: var(--text); }
+.rec-body { font-size: 0.85rem; color: var(--muted); line-height: 1.65; }
+.rec-body strong { color: var(--text); }
+
+/* DOC SECTION */
+.doc-section { background: var(--bg2); border: 1px solid var(--border); padding: 2.5rem; margin-top: 2rem; }
+.doc-section-title { font-family: var(--mono); font-size: 0.65rem; color: var(--cyan); letter-spacing: 0.18em; text-transform: uppercase; margin-bottom: 1.5rem; opacity: 0.8; }
+.doc-links { display: flex; flex-wrap: wrap; gap: 1rem; }
+.doc-link-card {
+  flex: 1; min-width: 240px;
+  background: var(--bg3); border: 1px solid var(--border);
+  padding: 1.25rem 1.5rem;
+  text-decoration: none; color: inherit;
+  display: flex; align-items: center; gap: 1rem;
+  transition: all 0.25s;
+}
+.doc-link-card:hover { border-color: var(--border2); background: rgba(99,210,255,0.04); transform: translateY(-2px); }
+.doc-link-icon { font-size: 1.4rem; flex-shrink: 0; }
+.doc-link-type { font-family: var(--mono); font-size: 0.58rem; color: var(--muted); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 0.2rem; }
+.doc-link-name { font-size: 0.88rem; font-weight: 500; color: var(--cyan); }
+.doc-link-arrow { margin-left: auto; color: var(--muted); font-size: 1rem; transition: all 0.2s; }
+.doc-link-card:hover .doc-link-arrow { color: var(--cyan); transform: translateX(3px); }
+
+/* FOOTER */
+.case-footer { border-top: 1px solid var(--border); padding: 1.5rem clamp(1.5rem, 5vw, 4rem); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; position: relative; z-index: 1; }
+.footer-copy { font-family: var(--mono); font-size: 0.62rem; color: var(--muted); letter-spacing: 0.08em; }
+.footer-back { font-family: var(--mono); font-size: 0.62rem; color: var(--muted); text-decoration: none; transition: color 0.2s; }
+.footer-back:hover { color: var(--cyan); }
+
+/* LANG TRANSITION */
+[data-id] { transition: opacity 0.15s ease; }
+body.lang-switching [data-id] { opacity: 0; }
+
+/* ANIMATIONS */
+@keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+  .two-col { grid-template-columns: 1fr; gap: 1.5rem; }
+  .rec-grid { grid-template-columns: 1fr; }
+  .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+  .bq-item { flex-direction: column; gap: 0.75rem; }
+}
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+
+<nav>
+  <a href="index.html" class="nav-back">← <span data-id="nav-back">KEMBALI KE PORTFOLIO</span></a>
+  <a href="#" class="nav-logo">SAILY ROSHINA // PORTFOLIO</a>
+  <div class="nav-right">
+    <div class="lang-toggle">
+      <button class="lang-btn active" data-lang="id" onclick="setLang('id')">ID</button>
+      <button class="lang-btn" data-lang="en" onclick="setLang('en')">EN</button>
+    </div>
+  </div>
+</nav>
+
+<header class="case-hero">
+  <div class="wrapper">
+    <div class="case-eyebrow" data-id="hero-eyebrow">Finance · Forecasting · Data Analyst</div>
+    <h1 class="case-title" data-id="case-title">Financial Forecasting untuk Keputusan Ekspansi</h1>
+    <div class="case-subtitle" data-id="case-subtitle">FinanceFirst Group · Analisis Proyeksi Keuangan</div>
+    
+    <div class="case-meta">
+      <div class="meta-item">
+        <span class="meta-label" data-id="meta-label-1">Perusahaan</span>
+        <span class="meta-val" data-id="meta-val-1">FinanceFirst Group</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label" data-id="meta-label-2">Industri</span>
+        <span class="meta-val" data-id="meta-val-2">Multifinance (UMKM Lending)</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label" data-id="meta-label-3">Periode</span>
+        <span class="meta-val" data-id="meta-val-3">Jan 2025 – Mar 2026</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label" data-id="meta-label-4">Tools</span>
+        <span class="meta-val" data-id="meta-val-4">Google Sheets</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label" data-id="meta-label-5">Role</span>
+        <span class="meta-val" data-id="meta-val-5">Data Analyst</span>
+      </div>
+    </div>
+
+    <div class="hero-pills">
+      <span class="pill">Financial Analysis</span>
+      <span class="pill">Forecasting</span>
+      <span class="pill">Scenario Modeling</span>
+      <span class="pill">Data Cleaning</span>
+      <span class="pill">Business Insight</span>
+    </div>
+
+    <div class="hero-narrative">
+      <p data-id="hero-desc-1">Project ini berfokus pada penyusunan proyeksi keuangan berbasis data historis untuk mendukung keputusan ekspansi senilai Rp 50 miliar. Analisis dilakukan dengan mempertimbangkan kualitas data yang belum sepenuhnya bersih akibat migrasi ERP, serta kebutuhan stakeholder akan proyeksi yang kredibel dan dapat dipertanggungjawabkan.</p>
+      <p data-id="hero-desc-2">Pendekatan yang digunakan menggabungkan data cleaning, analisis tren, serta metode forecasting berbasis Moving Average (MA-3) dan scenario modeling (base, optimistic, pessimistic). Hasilnya memberikan gambaran risiko dan potensi pertumbuhan yang dapat digunakan sebagai dasar pengambilan keputusan strategis.</p>
+    </div>
+
+    <div class="doc-buttons">
+      <a href="https://docs.google.com/spreadsheets/d/1VxDXFtEWNoIvYFw8J-5C03UrmIaFi-NXczWbczr24-I/edit?usp=sharing" target="_blank" rel="noopener" class="doc-btn doc-btn-primary">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 3c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm7 13H5v-.23c0-.62.28-1.2.76-1.58C7.47 15.82 9.64 15 12 15s4.53.82 6.24 2.19c.48.38.76.97.76 1.58V19z"/></svg>
+        <span data-id="btn-dashboard">Buka Google Sheets</span>
+      </a>
+      <a href="https://canva.link/ov1esm0vnkwtbub" target="_blank" rel="noopener" class="doc-btn doc-btn-ghost">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+        <span data-id="btn-slides">Lihat Presentasi</span>
+      </a>
+    </div>
+  </div>
+</header>
+
+<section class="kpi-strip">
+  <div class="kpi-grid">
+    <div class="kpi-card">
+      <div class="kpi-val cyan">Rp 1.45B – Rp 2.05B</div>
+      <div class="kpi-label" data-id="kpi-1">Proyeksi Revenue Q2</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-val violet">~Rp 470M – Rp 730M</div>
+      <div class="kpi-label" data-id="kpi-2">Revenue Bulanan Historis</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-val green">32% – 43%</div>
+      <div class="kpi-label" data-id="kpi-3">Net Profit Margin</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-val yellow">55% – 65%</div>
+      <div class="kpi-label" data-id="kpi-4">Expense Ratio</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-val red">-15% / +20%</div>
+      <div class="kpi-label" data-id="kpi-5">Rentang Risiko & Upside</div>
+    </div>
+  </div>
+</section>
+
+<section class="content-section">
+  <div class="wrapper">
+    <div class="sec-label" data-id="sec-label-1">// 01 . Overview</div>
+    <h2 class="sec-title" data-id="sec-title-1">Project Overview & Konteks Bisnis</h2>
+    <div class="sec-body">
+      <p data-id="overview-p1">Project ini bertujuan untuk membangun proyeksi revenue yang dapat digunakan sebagai dasar keputusan ekspansi bisnis ke tiga kota baru. Analisis difokuskan pada kestabilan revenue, struktur biaya, serta kemampuan perusahaan dalam menghadapi skenario terburuk.</p>
+      
+      <div class="two-col" style="margin-top: 2rem;">
+        <div>
+          <strong data-id="overview-sub-1">Business Context</strong>
+          <p data-id="overview-sub-p1">FinanceFirst Group mengalami pertumbuhan revenue yang cukup stabil selama 15 bulan terakhir, yang mendorong rencana ekspansi. Namun, keputusan ini memerlukan validasi berbasis data karena melibatkan investasi besar dan risiko jangka panjang.</p>
+        </div>
+        <div>
+          <strong data-id="overview-sub-2">Tantangan Data & Keputusan</strong>
+          <p data-id="overview-sub-p3">Data keuangan mengandung anomali akibat migrasi ERP, sementara Board membutuhkan proyeksi berbasis skenario yang dapat menjelaskan risiko dan potensi secara komprehensif dalam waktu terbatas (2 minggu).</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="content-section">
+  <div class="wrapper">
+    <div class="sec-label" data-id="sec-label-2">// 02 . Problem Statement</div>
+    <h2 class="sec-title" data-id="sec-title-2">Masalah Utama & Dampak Finansial</h2>
+    <div class="sec-body">
+      <p data-id="problem-p1">Analisis ini berhadapan dengan kualitas data mentah yang belum sempurna pasca migrasi sistem, serta kebutuhan mendesak akan model proyeksi yang dapat diandalkan oleh para eksekutif.</p>
+      
+      <div class="issue-grid">
+        <div class="issue-card">
+          <div class="issue-num">ISSUE_01</div>
+          <div class="issue-title" data-id="issue-t1">Proyeksi Tidak Kredibel</div>
+          <div class="issue-desc" data-id="issue-d1">Board tidak akan menyetujui ekspansi tanpa model proyeksi yang kuat dan dapat dipertanggungjawabkan.</div>
+        </div>
+        <div class="issue-card">
+          <div class="issue-num">ISSUE_02</div>
+          <div class="issue-title" data-id="issue-t2">Data Tidak Bersih</div>
+          <div class="issue-desc" data-id="issue-d2">Data mengandung duplikasi, revenue negatif, dan tanggal tidak valid yang dapat mengganggu akurasi analisis.</div>
+        </div>
+        <div class="issue-card">
+          <div class="issue-num">ISSUE_03</div>
+          <div class="issue-title" data-id="issue-t3">Risiko Keputusan Tinggi</div>
+          <div class="issue-desc" data-id="issue-d3">Kesalahan proyeksi dapat menyebabkan over-investment atau kehilangan momentum pasar.</div>
+        </div>
+      </div>
+
+      <p style="margin-top: 2rem;" data-id="problem-p2"><strong>Business Impact:</strong> Keputusan yang didasarkan pada data historis yang kotor atau proyeksi yang bias dapat mengakibatkan salah alokasi dana ekspansi senilai Rp 50 miliar, yang akan membahayakan cash flow operasional utama.</p>
+    </div>
+  </div>
+</section>
+
+<section class="content-section">
+  <div class="wrapper">
+    <div class="sec-label" data-id="sec-label-3">// 03 . Scope & Questions</div>
+    <h2 class="sec-title" data-id="sec-title-3">Pertanyaan Bisnis & Ruang Lingkup</h2>
+    <div class="sec-body">
+      <p data-id="scope-p1">Ruang lingkup proyek ini mencakup analisis histori keuangan, pembersihan anomali data, dan permodelan skenario masa depan.</p>
+      
+      <div class="bq-list">
+        <div class="bq-item">
+          <div class="bq-num">?</div>
+          <div>
+            <div class="bq-q" data-id="bq-q1">Apakah tren revenue cukup stabil untuk mendukung ekspansi?</div>
+            <div class="bq-purpose" data-id="bq-p1">Tujuan: Menilai kestabilan dan arah pertumbuhan</div>
+          </div>
+        </div>
+        <div class="bq-item">
+          <div class="bq-num">?</div>
+          <div>
+            <div class="bq-q" data-id="bq-q2">Berapa proyeksi revenue Q2 2026 dalam 3 skenario?</div>
+            <div class="bq-purpose" data-id="bq-p2">Tujuan: Memberikan range proyeksi</div>
+          </div>
+        </div>
+        <div class="bq-item">
+          <div class="bq-num">?</div>
+          <div>
+            <div class="bq-q" data-id="bq-q3">Apakah skenario terburuk masih sustainable?</div>
+            <div class="bq-purpose" data-id="bq-p3">Tujuan: Evaluasi risiko downside</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="content-section">
+  <div class="wrapper">
+    <div class="sec-label" data-id="sec-label-4">// 04 . Objectives & Urgency</div>
+    <h2 class="sec-title" data-id="sec-title-4">Tujuan Strategis & Tingkat Urgensi</h2>
+    <div class="sec-body">
+      <p data-id="obj-p1">Tujuan utama adalah membangun model proyeksi keuangan yang solid untuk memvalidasi kelayakan rencana ekspansi.</p>
+      <div style="background: rgba(255,77,77,0.05); border: 1px solid rgba(255,77,77,0.2); padding: 1.5rem; margin-top: 1.5rem;">
+        <span style="font-family: var(--mono); font-size: 0.7rem; color: var(--red); display: block; margin-bottom: 0.25rem; font-weight: 700;" data-id="urgency-label">🚨 WHY IT MATTERS NOW</span>
+        <p style="font-size: 0.95rem; margin: 0;" data-id="urgency-text">Board of Directors membutuhkan keputusan yang solid dalam 2 minggu. Kesalahan perhitungan atau penundaan dapat menghilangkan momentum pasar yang bernilai tinggi.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="content-section">
+  <div class="wrapper">
+    <div class="sec-label" data-id="sec-label-5">// 05 . Pipeline Workflow</div>
+    <h2 class="sec-title" data-id="sec-title-5">Arsitektur Data & Alur Kerja Sistem</h2>
+    <div class="sec-body">
+      <p data-id="pipeline-p1">Alur pemrosesan data dirancang untuk mengubah data kotor dari sistem ERP menjadi model skenario forecasting yang valid dan akurat.</p>
+      
+      <div class="method-steps">
+        <div class="method-step">
+          <div class="step-num">01</div>
+          <div>
+            <div class="step-title" data-id="step-t1">Data Cleaning & Validation</div>
+            <div class="step-desc" data-id="step-d1">Membersihkan duplikasi, revenue negatif, dan data tidak valid</div>
+          </div>
+        </div>
+        <div class="method-step">
+          <div class="step-num">02</div>
+          <div>
+            <div class="step-title" data-id="step-t2">Revenue Forecasting</div>
+            <div class="step-desc" data-id="step-d2">Monthly aggregation, MA-3, dan scenario modeling</div>
+          </div>
+        </div>
+        <div class="method-step">
+          <div class="step-num">03</div>
+          <div>
+            <div class="step-title" data-id="step-t3">Dashboarding & Insight</div>
+            <div class="step-desc" data-id="step-d3">Visualisasi dan penyusunan insight serta rekomendasi</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="schema-box">
+        <div class="schema-title" data-id="schema-title">Data yang Diproses</div>
+        <div class="schema-tags">
+          <span class="tag-code">Date</span><span class="tag-code">Revenue</span><span class="tag-code">Expenses</span><span class="tag-code">NetProfit</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="content-section" id="findings">
+  <div class="wrapper">
+    <div class="sec-label" data-id="sec-label-6">// 06 . Executive Summary & Insights</div>
+    <h2 class="sec-title" data-id="sec-title-6">Ringkasan Eksekutif & Temuan Analisis</h2>
+    <div class="sec-body">
+      <p data-id="finding-intro-1">Berdasarkan analisis data historis dan permodelan MA-3, ditemukan pola stabilitas finansial yang kuat meskipun pertumbuhan tidak selalu linear. Kinerja perusahaan secara konsisten menunjukkan margin profit yang sehat.</p>
+      <p style="color: var(--cyan);" data-id="finding-intro-2">Kesimpulan Utama: Fundamental keuangan FinanceFirst Group cukup solid untuk menahan skenario terburuk (pessimistic) dalam rencana ekspansi senilai Rp 50 miliar.</p>
+
+      <div class="finding-grid">
+        <div class="finding-card">
+          <div class="finding-icon">📊</div>
+          <div>
+            <div class="finding-label" data-id="f-lbl-1">Temuan 01</div>
+            <div class="finding-title" data-id="f-t1">Revenue Fluktuatif & Tidak Linear</div>
+            <div class="finding-body" data-id="f-b1">Revenue berada di kisaran Rp 470M – Rp 730M per bulan dengan pola yang tidak menunjukkan pertumbuhan konsisten. Terdapat indikasi seasonality dengan peak di mid-year dan Q4, serta stagnasi pada Q1 2026.</div>
+          </div>
+        </div>
+        
+        <div class="finding-card">
+          <div class="finding-icon">💰</div>
+          <div>
+            <div class="finding-label" data-id="f-lbl-2">Temuan 02</div>
+            <div class="finding-title" data-id="f-t2">Struktur Biaya Stabil & Terkontrol</div>
+            <div class="finding-body" data-id="f-b2">Expense ratio stabil di kisaran 55%–65% tanpa lonjakan signifikan. Hal ini menunjukkan kemampuan perusahaan dalam mengontrol biaya seiring perubahan revenue.</div>
+          </div>
+        </div>
+
+        <div class="finding-card">
+          <div class="finding-icon">📈</div>
+          <div>
+            <div class="finding-label" data-id="f-lbl-3">Temuan 03</div>
+            <div class="finding-title" data-id="f-t3">Profitabilitas Kuat & Konsisten</div>
+            <div class="finding-body" data-id="f-b3">Net Profit Margin berada di kisaran 32%–43% tanpa tekanan margin, menunjukkan fondasi finansial yang kuat.</div>
+          </div>
+        </div>
+
+        <div class="finding-card">
+          <div class="finding-icon">🛡️</div>
+          <div>
+            <div class="finding-label" data-id="f-lbl-4">Temuan 04</div>
+            <div class="finding-title" data-id="f-t4">Proyeksi Stabil di Semua Skenario</div>
+            <div class="finding-body" data-id="f-b4">Proyeksi Q2 2026 menunjukkan Rp 1.45B (pessimistic), Rp 1.71B (base), dan Rp 2.05B (optimistic). Risiko downside tetap dalam batas aman.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="content-section" id="dashboard">
+  <div class="wrapper">
+    <div class="sec-label" data-id="sec-label-embed">// 07 . Dashboard</div>
+    <h2 class="sec-title" data-id="sec-title-embed">Data Visualization</h2>
+    <div class="sec-body">
+      <p data-id="embed-desc">Berikut adalah tampilan lembar dashboard interaktif live yang menyajikan visualisasi forecasting finansial dan permodelan skenario:</p>
+      <div class="dashboard-container">
+        <iframe src="https://docs.google.com/spreadsheets/d/e/2PACX-1vQImBZf0Y5Wh-xrtumgOcjmnc_1qYi_1p0HMFyj92YYnWaPyY5tQc2HZZdRr98Vw_1H0yy2kDCrjx_G/pubhtml?gid=1312341636&amp;single=true&amp;widget=true&amp;headers=false"></iframe>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="content-section" id="recommendations">
+  <div class="wrapper">
+    <div class="sec-label" data-id="sec-label-7">// 08 . Recommendations</div>
+    <h2 class="sec-title" data-id="sec-title-7">Rekomendasi Aksi Taktikal Bisnis</h2>
+    <div class="sec-body">
+      <p data-id="rec-intro">Berdasarkan ringkasan temuan data di atas, berikut adalah rekomendasi taktis operasional yang dapat dipertimbangkan:</p>
+      
+      <div class="rec-grid">
+        <div class="rec-card">
+          <div class="rec-num">01</div>
+          <div class="rec-title" data-id="rec-t1">Lanjutkan Ekspansi dengan Monitoring</div>
+          <div class="rec-body" data-id="rec-b1">Ekspansi dapat dilakukan karena revenue stabil dan tidak menunjukkan penurunan signifikan. Terapkan monitoring performa secara berkala (quarterly).</div>
+        </div>
+
+        <div class="rec-card">
+          <div class="rec-num">02</div>
+          <div class="rec-title" data-id="rec-t2">Gunakan Skenario Pessimistic untuk Budgeting</div>
+          <div class="rec-body" data-id="rec-b2">Gunakan Rp 1.45B sebagai baseline budgeting untuk menjaga keberlanjutan operasional dan mengurangi risiko.</div>
+        </div>
+
+        <div class="rec-card">
+          <div class="rec-num">03</div>
+          <div class="rec-title" data-id="rec-t3">Implementasi Rolling Forecast Bulanan</div>
+          <div class="rec-body" data-id="rec-b3">Update forecast setiap bulan menggunakan data aktual untuk mendeteksi perubahan tren lebih cepat dan sebagai early warning system.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="content-section">
+  <div class="wrapper">
+    <div class="doc-section">
+      <div class="doc-section-title" data-id="doc-section-title">// Project Documents & Artefak Analisis</div>
+      <div class="sec-body" style="margin-bottom: 1.5rem;">
+        <p data-id="doc-p">Seluruh proses pengolahan data, formula pembersihan data, serta permodelan MA-3 disusun secara transparan dan dapat diakses melalui tautan dokumentasi di bawah ini:</p>
+      </div>
+      <div class="doc-links">
+        <a href="https://docs.google.com/spreadsheets/d/1VxDXFtEWNoIvYFw8J-5C03UrmIaFi-NXczWbczr24-I/edit?usp=sharing" target="_blank" rel="noopener" class="doc-link-card">
+          <div class="doc-link-icon">📊</div>
+          <div>
+            <div class="doc-link-type" data-id="doc1-type">Google Sheets</div>
+            <div class="doc-link-name" data-id="doc1-name">Financial Projection Model (Full Processing)</div>
+          </div>
+          <div class="doc-link-arrow">→</div>
+        </a>
+        <a href="https://canva.link/ov1esm0vnkwtbub" target="_blank" rel="noopener" class="doc-link-card">
+          <div class="doc-link-icon">🖥️</div>
+          <div>
+            <div class="doc-link-type" data-id="doc2-type">Presentation Deck</div>
+            <div class="doc-link-name" data-id="doc2-name">Expansion Financial Deck — Q2 2026</div>
+          </div>
+          <div class="doc-link-arrow">→</div>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="case-footer">
+  <div class="footer-copy" data-id="footer-copy">© 2026 SAILY ROSHINA AYU VIDIANA. ALL RIGHTS RESERVED.</div>
+  <a href="index.html" class="footer-back">← <span data-id="footer-back">KEMBALI KE PORTFOLIO</span></a>
+</footer>
+
+<script>
+const T = {
+  id: {
+    'nav-back': 'KEMBALI KE PORTFOLIO',
+    'hero-eyebrow': 'Finance · Forecasting · Data Analyst',
+    'case-title': 'Financial Forecasting untuk Keputusan Ekspansi',
+    'case-subtitle': 'FinanceFirst Group · Analisis Proyeksi Keuangan',
+    'meta-label-1': 'Perusahaan', 'meta-val-1': 'FinanceFirst Group',
+    'meta-label-2': 'Industri', 'meta-val-2': 'Multifinance (UMKM Lending)',
+    'meta-label-3': 'Periode', 'meta-val-3': 'Jan 2025 – Mar 2026',
+    'meta-label-4': 'Tools', 'meta-val-4': 'Google Sheets',
+    'meta-label-5': 'Role', 'meta-val-5': 'Data Analyst',
+    'hero-desc-1': 'Project ini berfokus pada penyusunan proyeksi keuangan berbasis data historis untuk mendukung keputusan ekspansi senilai Rp 50 miliar. Analisis dilakukan dengan mempertimbangkan kualitas data yang belum sepenuhnya bersih akibat migrasi ERP, serta kebutuhan stakeholder akan proyeksi yang kredibel dan dapat dipertanggungjawabkan.',
+    'hero-desc-2': 'Pendekatan yang digunakan menggabungkan data cleaning, analisis tren, serta metode forecasting berbasis Moving Average (MA-3) dan scenario modeling (base, optimistic, pessimistic). Hasilnya memberikan gambaran risiko dan potensi pertumbuhan yang dapat digunakan sebagai dasar pengambilan keputusan strategis.',
+    'btn-dashboard': 'Buka Google Sheets',
+    'btn-slides': 'Lihat Presentasi',
+    'kpi-1': 'Proyeksi Revenue Q2', 'kpi-2': 'Revenue Bulanan Historis', 'kpi-3': 'Net Profit Margin', 'kpi-4': 'Expense Ratio', 'kpi-5': 'Rentang Risiko & Upside',
+    'sec-label-1': '// 01 . Overview', 'sec-title-1': 'Project Overview & Konteks Bisnis',
+    'overview-p1': 'Project ini bertujuan untuk membangun proyeksi revenue yang dapat digunakan sebagai dasar keputusan ekspansi bisnis ke tiga kota baru. Analisis difokuskan pada kestabilan revenue, struktur biaya, serta kemampuan perusahaan dalam menghadapi skenario terburuk.',
+    'overview-sub-1': 'Business Context',
+    'overview-sub-p1': 'FinanceFirst Group mengalami pertumbuhan revenue yang cukup stabil selama 15 bulan terakhir, yang mendorong rencana ekspansi. Namun, keputusan ini memerlukan validasi berbasis data karena melibatkan investasi besar dan risiko jangka panjang.',
+    'overview-sub-2': 'Tantangan Data & Keputusan',
+    'overview-sub-p3': 'Data keuangan mengandung anomali akibat migrasi ERP, sementara Board membutuhkan proyeksi berbasis skenario yang dapat menjelaskan risiko dan potensi secara komprehensif dalam waktu terbatas (2 minggu).',
+    'sec-label-2': '// 02 . Problem Statement', 'sec-title-2': 'Masalah Utama & Dampak Finansial',
+    'problem-p1': 'Analisis ini berhadapan dengan kualitas data mentah yang belum sempurna pasca migrasi sistem, serta kebutuhan mendesak akan model proyeksi yang dapat diandalkan oleh para eksekutif.',
+    'issue-t1': 'Proyeksi Tidak Kredibel', 'issue-d1': 'Board tidak akan menyetujui ekspansi tanpa model proyeksi yang kuat dan dapat dipertanggungjawabkan.',
+    'issue-t2': 'Data Tidak Bersih', 'issue-d2': 'Data mengandung duplikasi, revenue negatif, dan tanggal tidak valid yang dapat mengganggu akurasi analisis.',
+    'issue-t3': 'Risiko Keputusan Tinggi', 'issue-d3': 'Kesalahan proyeksi dapat menyebabkan over-investment atau kehilangan momentum pasar.',
+    'problem-p2': 'Business Impact: Keputusan yang didasarkan pada data historis yang kotor atau proyeksi yang bias dapat mengakibatkan salah alokasi dana ekspansi senilai Rp 50 miliar, yang akan membahayakan cash flow operasional utama.',
+    'sec-label-3': '// 03 . Scope & Questions', 'sec-title-3': 'Pertanyaan Bisnis & Ruang Lingkup',
+    'scope-p1': 'Ruang lingkup proyek ini mencakup analisis histori keuangan, pembersihan anomali data, dan permodelan skenario masa depan.',
+    'bq-q1': 'Apakah tren revenue cukup stabil untuk mendukung ekspansi?', 'bq-p1': 'Tujuan: Menilai kestabilan dan arah pertumbuhan',
+    'bq-q2': 'Berapa proyeksi revenue Q2 2026 dalam 3 skenario?', 'bq-p2': 'Tujuan: Memberikan range proyeksi',
+    'bq-q3': 'Apakah skenario terburuk masih sustainable?', 'bq-p3': 'Tujuan: Evaluasi risiko downside',
+    'sec-label-4': '// 04 . Objectives & Urgency', 'sec-title-4': 'Tujuan Strategis & Tingkat Urgensi',
+    'obj-p1': 'Tujuan utama adalah membangun model proyeksi keuangan yang solid untuk memvalidasi kelayakan rencana ekspansi.',
+    'urgency-label': '🚨 WHY IT MATTERS NOW', 'urgency-text': 'Board of Directors membutuhkan keputusan yang solid dalam 2 minggu. Kesalahan perhitungan atau penundaan dapat menghilangkan momentum pasar yang bernilai tinggi.',
+    'sec-label-5': '// 05 . Pipeline Workflow', 'sec-title-5': 'Arsitektur Data & Alur Kerja Sistem',
+    'pipeline-p1': 'Alur pemrosesan data dirancang untuk mengubah data kotor dari sistem ERP menjadi model skenario forecasting yang valid dan akurat.',
+    'step-t1': 'Data Cleaning & Validation', 'step-d1': 'Membersihkan duplikasi, revenue negatif, dan data tidak valid',
+    'step-t2': 'Revenue Forecasting', 'step-d2': 'Monthly aggregation, MA-3, dan scenario modeling',
+    'step-t3': 'Dashboarding & Insight', 'step-d3': 'Visualisasi dan penyusunan insight serta rekomendasi',
+    'schema-title': 'Data yang Diproses',
+    
+    // Section 06 Kamus ID
+    'sec-label-6': '// 06 . Executive Summary & Insights', 'sec-title-6': 'Ringkasan Eksekutif & Temuan Analisis',
+    'finding-intro-1': 'Berdasarkan analisis data historis dan permodelan MA-3, ditemukan pola stabilitas finansial yang kuat meskipun pertumbuhan tidak selalu linear. Kinerja perusahaan secara konsisten menunjukkan margin profit yang sehat.',
+    'finding-intro-2': 'Kesimpulan Utama: Fundamental keuangan FinanceFirst Group cukup solid untuk menahan skenario terburuk (pessimistic) dalam rencana ekspansi senilai Rp 50 miliar.',
+    'f-lbl-1': 'Temuan 01', 'f-t1': 'Revenue Fluktuatif & Tidak Linear', 'f-b1': 'Revenue berada di kisaran Rp 470M – Rp 730M per bulan dengan pola yang tidak menunjukkan pertumbuhan konsisten. Terdapat indikasi seasonality dengan peak di mid-year dan Q4, serta stagnasi pada Q1 2026.',
+    'f-lbl-2': 'Temuan 02', 'f-t2': 'Struktur Biaya Stabil & Terkontrol', 'f-b2': 'Expense ratio stabil di kisaran 55%–65% tanpa lonjakan signifikan. Hal ini menunjukkan kemampuan perusahaan dalam mengontrol biaya seiring perubahan revenue.',
+    'f-lbl-3': 'Temuan 03', 'f-t3': 'Profitabilitas Kuat & Konsisten', 'f-b3': 'Net Profit Margin berada di kisaran 32%–43% tanpa tekanan margin, menunjukkan fondasi finansial yang kuat.',
+    'f-lbl-4': 'Temuan 04', 'f-t4': 'Proyeksi Stabil di Semua Skenario', 'f-b4': 'Proyeksi Q2 2026 menunjukkan Rp 1.45B (pessimistic), Rp 1.71B (base), dan Rp 2.05B (optimistic). Risiko downside tetap dalam batas aman.',
+    
+    // Section 07 Kamus ID
+    'sec-label-embed': '// 07 . Dashboard', 'sec-title-embed': 'Data Visualization',
+    'embed-desc': 'Berikut adalah tampilan lembar dashboard interaktif live yang menyajikan visualisasi forecasting finansial dan permodelan skenario:',
+    
+    // Section 08 Kamus ID
+    'sec-label-7': '// 08 . Recommendations', 'sec-title-7': 'Rekomendasi Aksi Taktikal Bisnis',
+    'rec-intro': 'Berdasarkan ringkasan temuan data di atas, berikut adalah rekomendasi taktis operasional yang dapat dipertimbangkan:',
+    'rec-t1': 'Lanjutkan Ekspansi dengan Monitoring', 'rec-b1': 'Ekspansi dapat dilakukan karena revenue stabil dan tidak menunjukkan penurunan signifikan. Terapkan monitoring performa secara berkala (quarterly).',
+    'rec-t2': 'Gunakan Skenario Pessimistic untuk Budgeting', 'rec-b2': 'Gunakan Rp 1.45B sebagai baseline budgeting untuk menjaga keberlanjutan operasional dan mengurangi risiko.',
+    'rec-t3': 'Implementasi Rolling Forecast Bulanan', 'rec-b3': 'Update forecast setiap bulan menggunakan data aktual untuk mendeteksi perubahan tren lebih cepat dan sebagai early warning system.',
+    
+    'doc-section-title': '// Project Documents & Artefak Analisis',
+    'doc-p': 'Seluruh proses pengolahan data, formula pembersihan data, serta permodelan MA-3 disusun secara transparan dan dapat diakses melalui tautan dokumentasi di bawah ini:',
+    'doc1-type': 'Google Sheets', 'doc1-name': 'Financial Projection Model (Full Processing)',
+    'doc2-type': 'Presentation Deck', 'doc2-name': 'Expansion Financial Deck — Q2 2026',
+    'footer-copy': '© 2026 SAILY ROSHINA AYU VIDIANA. ALL RIGHTS RESERVED.',
+    'footer-back': 'KEMBALI KE PORTFOLIO'
+  },
+  en: {
+    'nav-back': 'BACK TO PORTFOLIO',
+    'hero-eyebrow': 'Finance · Forecasting · Data Analyst',
+    'case-title': 'Financial Forecasting for Expansion Decision',
+    'case-subtitle': 'FinanceFirst Group · Financial Projection Analysis',
+    'meta-label-1': 'Company', 'meta-val-1': 'FinanceFirst Group',
+    'meta-label-2': 'Industry', 'meta-val-2': 'Multifinance (UMKM Lending)',
+    'meta-label-3': 'Period', 'meta-val-3': 'Jan 2025 – Mar 2026',
+    'meta-label-4': 'Tools', 'meta-val-4': 'Google Sheets',
+    'meta-label-5': 'Role', 'meta-val-5': 'Data Analyst',
+    'hero-desc-1': 'This project focuses on developing data-driven financial projections to support a IDR 50 billion expansion decision. The analysis accounts for imperfect ERP data quality and emphasizes building a credible and defensible forecasting model for stakeholders.',
+    'hero-desc-2': 'The approach combines data cleaning, trend analysis, and forecasting using Moving Average (MA-3) and scenario-based modeling (base, optimistic, pessimistic). The results provide a clear view of risks and growth potential to support strategic decision-making.',
+    'btn-dashboard': 'Open Google Sheets',
+    'btn-slides': 'View Presentation',
+    'kpi-1': 'Q2 Revenue Projection', 'kpi-2': 'Historical Monthly Revenue', 'kpi-3': 'Net Profit Margin', 'kpi-4': 'Expense Ratio', 'kpi-5': 'Risk & Upside Range',
+    'sec-label-1': '// 01 . Overview', 'sec-title-1': 'Project Overview & Business Context',
+    'overview-p1': 'This project aims to develop revenue projections to support expansion decisions into three new cities. The analysis focuses on revenue stability, cost structure, and the company’s ability to withstand worst-case scenarios.',
+    'overview-sub-1': 'Business Context',
+    'overview-sub-p1': 'FinanceFirst Group has shown relatively stable revenue growth over the past 15 months, driving expansion plans. However, this decision requires data-driven validation due to its high investment and long-term risk.',
+    'overview-sub-2': 'Data & Decision Challenges',
+    'overview-sub-p3': 'Financial data contains anomalies due to ERP migration, while the Board requires scenario-based projections that clearly explain risks and opportunities within a tight 2-week deadline.',
+    'sec-label-2': '// 02 . Problem Statement', 'sec-title-2': 'Core Problems & Financial Impact',
+    'problem-p1': 'This analysis deals with imperfect raw data quality post-system migration, alongside an urgent need for a reliable projection model for the executives.',
+    'issue-t1': 'Unreliable Projection', 'issue-d1': 'The Board will not approve expansion without a strong and defensible projection model.',
+    'issue-t2': 'Dirty ERP Data', 'issue-d2': 'Data contains duplicates, negative revenue, and invalid dates affecting analysis accuracy.',
+    'issue-t3': 'High-Stakes Decision', 'issue-d3': 'Inaccurate projections may lead to over-investment or missed market opportunities.',
+    'problem-p2': 'Business Impact: Decisions based on dirty historical data or biased projections could lead to misallocation of IDR 50 billion in expansion funds, jeopardizing core operational cash flows.',
+    'sec-label-3': '// 03 . Scope & Questions', 'sec-title-3': 'Business Questions & Analytical Scope',
+    'scope-p1': 'The scope of this project includes financial historical analysis, data anomaly cleansing, and future scenario modeling.',
+    'bq-q1': 'Is the revenue trend stable enough to support expansion?', 'bq-p1': 'Goal: Assess stability and growth direction',
+    'bq-q2': 'What is the projected Q2 2026 revenue under 3 scenarios?', 'bq-p2': 'Goal: Provide a projection range',
+    'bq-q3': 'Is the pessimistic scenario still sustainable?', 'bq-p3': 'Goal: Evaluate downside risks',
+    'sec-label-4': '// 04 . Objectives & Urgency', 'sec-title-4': 'Strategic Objectives & Urgency Level',
+    'obj-p1': 'The main objective is to build a solid financial projection model to validate the feasibility of the expansion plan.',
+    'urgency-label': '🚨 WHY IT MATTERS NOW', 'urgency-text': 'The Board of Directors needs a solid decision within 2 weeks. Calculation errors or delays could result in missing highly valuable market momentum.',
+    'sec-label-5': '// 05 . Pipeline Workflow', 'sec-title-5': 'Data Architecture & System Workflow',
+    'pipeline-p1': 'The data processing workflow is designed to transform dirty data from the ERP system into a valid and accurate forecasting scenario model.',
+    'step-t1': 'Data Cleaning & Validation', 'step-d1': 'Removing duplicates, negative revenue, and invalid records',
+    'step-t2': 'Revenue Forecasting', 'step-d2': 'Monthly aggregation, MA-3, and scenario modeling',
+    'step-t3': 'Dashboarding & Insight', 'step-d3': 'Visualization and insight generation',
+    'schema-title': 'Processed Data',
+    
+    // Section 06 Kamus EN
+    'sec-label-6': '// 06 . Executive Summary & Insights', 'sec-title-6': 'Executive Summary & Analytical Insights',
+    'finding-intro-1': 'Based on historical data analysis and MA-3 modeling, strong patterns of financial stability were found despite non-linear growth. The company\'s performance consistently demonstrates healthy profit margins.',
+    'finding-intro-2': 'Core Conclusion: FinanceFirst Group\'s financial fundamentals are solid enough to withstand the worst-case (pessimistic) scenario in the IDR 50 billion expansion plan.',
+    'f-lbl-1': 'Insight 01', 'f-t1': 'Fluctuating & Non-Linear Revenue', 'f-b1': 'Revenue ranges between IDR 470M – 730M monthly with no consistent growth trend. Seasonality is observed with peaks in mid-year and Q4, and stagnation in Q1 2026.',
+    'f-lbl-2': 'Insight 02', 'f-t2': 'Stable & Controlled Cost Structure', 'f-b2': 'Expense ratio remains stable at 55%–65% with no significant spikes, indicating strong cost control aligned with revenue changes.',
+    'f-lbl-3': 'Insight 03', 'f-t3': 'Strong & Consistent Profitability', 'f-b3': 'Net Profit Margin remains between 32%–43% with no margin pressure, indicating strong financial fundamentals.',
+    'f-lbl-4': 'Insight 04', 'f-t4': 'Stable Projection Across Scenarios', 'f-b4': 'Q2 2026 projection shows IDR 1.45B (pessimistic), IDR 1.71B (base), and IDR 2.05B (optimistic), with manageable downside risk.',
+    
+    // Section 07 Kamus EN
+    'sec-label-embed': '// 07 . Dashboard', 'sec-title-embed': 'Data Visualization',
+    'embed-desc': 'Below is the interactive live dashboard presenting the financial forecasting and scenario modeling visuals:',
+    
+    // Section 08 Kamus EN
+    'sec-label-7': '// 08 . Recommendations', 'sec-title-7': 'Tactical Business Action Recommendations',
+    'rec-intro': 'Based on the analytical insights above, the following operational recommendations are suggested:',
+    'rec-t1': 'Proceed with Expansion with Monitoring', 'rec-b1': 'Expansion can proceed due to stable revenue with no significant decline. Implement quarterly performance monitoring.',
+    'rec-t2': 'Use Pessimistic Scenario for Budgeting', 'rec-b2': 'Use IDR 1.45B as the baseline budget to ensure operational sustainability and reduce risk.',
+    'rec-t3': 'Implement Monthly Rolling Forecast', 'rec-b3': 'Update forecasts monthly using actual data to detect trend changes early and act as an early warning system.',
+    
+    'doc-section-title': '// Project Documents & Analysis Artifacts',
+    'doc-p': 'The entire data processing workflow, formulas, and MA-3 modeling structures are transparently compiled and accessible via the official documentation links below:',
+    'doc1-type': 'Google Sheets', 'doc1-name': 'Financial Projection Model (Full Processing)',
+    'doc2-type': 'Presentation Deck', 'doc2-name': 'Expansion Financial Deck — Q2 2026',
+    'footer-copy': '© 2026 SAILY ROSHINA AYU VIDIANA. ALL RIGHTS RESERVED.',
+    'footer-back': 'BACK TO PORTFOLIO'
+  }
+};
+
+let currentLang = localStorage.getItem('lang') || 'id';
+
+function setLang(lang) {
+  if (lang === currentLang) return;
+  currentLang = lang;
+  localStorage.setItem('lang', lang);
+  document.body.classList.add('lang-switching');
+  setTimeout(() => {
+    applyTranslations(lang);
+    document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('active', b.dataset.lang === lang));
+    document.documentElement.lang = lang;
+    document.body.classList.remove('lang-switching');
+  }, 150);
+}
+
+function applyTranslations(lang) {
+  const t = T[lang];
+  document.querySelectorAll('[data-id]').forEach(el => {
+    const key = el.getAttribute('data-id');
+    if (t[key] !== undefined) el.innerHTML = t[key];
+  });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  applyTranslations(currentLang);
+  document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('active', b.dataset.lang === currentLang));
+  document.documentElement.lang = currentLang;
+});
+</script>
+
+</body>
+</html>
