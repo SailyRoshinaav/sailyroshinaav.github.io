@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Sales Performance & Trend Analysis — Saily Roshina</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:      #050810;
+  --bg2:     #080d1a;
+  --bg3:     #0d1526;
+  --border:  rgba(99,210,255,0.12);
+  --border2: rgba(99,210,255,0.25);
+  --cyan:    #63d2ff;
+  --violet:  #b57bff;
+  --green:   #39ff8f;
+  --red:     #ff4d4d;
+  --yellow:  #ffc93c;
+  --text:    #e8edf5;
+  --muted:   #7a8ba8;
+  --mono:    'Space Mono', monospace;
+  --sans:    'Space Grotesk', sans-serif;
+}
+
+html { scroll-behavior: smooth; }
+body { background: var(--bg); color: var(--text); font-family: var(--sans); font-size: 16px; line-height: 1.7; overflow-x: hidden; }
+
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.04) 2px, rgba(0,0,0,0.04) 4px);
+  pointer-events: none; z-index: 999;
+}
+
+.grid-bg {
+  position: fixed; inset: 0;
+  background-image: linear-gradient(rgba(99,210,255,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(99,210,255,0.04) 1px, transparent 1px);
+  background-size: 60px 60px; z-index: 0; pointer-events: none;
+}
+.grid-bg::after { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse 70% 50% at 50% 0%, rgba(99,210,255,0.06) 0%, transparent 70%); }
+
+.orb { position: fixed; border-radius: 50%; filter: blur(80px); pointer-events: none; z-index: 0; opacity: 0.1; }
+.orb-1 { width: 500px; height: 500px; background: var(--cyan); top: -200px; left: -100px; }
+.orb-2 { width: 400px; height: 400px; background: var(--violet); bottom: -150px; right: -100px; }
+
+/* NAV */
+nav {
+  position: fixed; top: 0; left: 0; right: 0;
+  display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+  padding: 1rem clamp(1.5rem, 5vw, 5rem);
+  background: rgba(5,8,16,0.85); backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border); z-index: 100;
+}
+.nav-back {
+  font-family: var(--mono); font-size: 0.7rem; color: var(--muted);
+  text-decoration: none; letter-spacing: 0.1em; display: flex; align-items: center; gap: 0.5rem;
+  transition: color 0.2s;
+}
+.nav-back:hover { color: var(--cyan); }
+.nav-logo { font-family: var(--mono); font-size: 0.8rem; color: var(--cyan); text-decoration: none; letter-spacing: 0.1em; }
+
+.nav-right { display: flex; align-items: center; gap: 1rem; }
+.lang-toggle { display: flex; align-items: center; background: var(--bg3); border: 1px solid var(--border2); border-radius: 2px; overflow: hidden; }
+.lang-btn { font-family: var(--mono); font-size: 0.62rem; font-weight: 700; letter-spacing: 0.1em; padding: 0.3rem 0.75rem; background: transparent; color: var(--muted); border: none; cursor: pointer; transition: all 0.2s; text-transform: uppercase; }
+.lang-btn.active { background: var(--cyan); color: var(--bg); }
+.lang-btn:not(.active):hover { color: var(--cyan); }
+
+/* LAYOUT */
+.wrapper { max-width: 860px; margin: 0 auto; padding: 0 clamp(1.5rem, 5vw, 4rem); position: relative; z-index: 1; }
+
+/* HERO */
+.case-hero {
+  padding-top: 7rem; padding-bottom: 4rem;
+  border-bottom: 1px solid var(--border);
+  position: relative; z-index: 1;
+}
+.case-hero .wrapper { padding-top: 2rem; padding-bottom: 2rem; }
+
+.case-eyebrow {
+  font-family: var(--mono); font-size: 0.68rem; color: var(--violet);
+  letter-spacing: 0.18em; text-transform: uppercase; margin-bottom: 1.25rem;
+  display: flex; align-items: center; gap: 0.6rem;
+  animation: fadeUp 0.6s ease both;
+}
+.case-eyebrow::before { content: '◆'; font-size: 0.45rem; color: var(--violet); }
+
+.case-title {
+  font-size: clamp(2rem, 5vw, 3.5rem); font-weight: 700;
+  line-height: 1.05; letter-spacing: -0.02em; margin-bottom: 1.5rem;
+  animation: fadeUp 0.6s 0.1s ease both;
+}
+
+.case-subtitle {
+  font-family: var(--mono); font-size: 0.8rem; color: var(--cyan);
+  letter-spacing: 0.06em; margin-bottom: 2rem;
+  animation: fadeUp 0.6s 0.15s ease both;
+}
+
+.case-meta {
+  display: flex; flex-wrap: wrap; gap: 2rem; margin-bottom: 2.5rem;
+  animation: fadeUp 0.6s 0.2s ease both;
+}
+.meta-item { display: flex; flex-direction: column; gap: 0.2rem; }
+.meta-label { font-family: var(--mono); font-size: 0.6rem; color: var(--muted); letter-spacing: 0.14em; text-transform: uppercase; }
+.meta-val { font-size: 0.9rem; font-weight: 500; color: var(--text); }
+
+.hero-pills { display: flex; flex-wrap: wrap; gap: 0.5rem; animation: fadeUp 0.6s 0.25s ease both; }
+.pill {
+  font-family: var(--mono); font-size: 0.62rem; color: var(--muted);
+  border: 1px solid var(--border); padding: 0.25rem 0.7rem;
+  border-radius: 2px; letter-spacing: 0.06em; background: rgba(5,8,16,0.5);
+}
+
+.hero-narrative { margin-top: 2.5rem; font-size: 1.05rem; line-height: 1.8; color: var(--muted); }
+.hero-narrative p { margin-bottom: 1rem; }
+.hero-narrative strong { color: var(--text); }
+
+/* DOC BUTTONS */
+.doc-buttons {
+  display: flex; flex-direction: row; flex-wrap: wrap; gap: 1rem; margin-top: 2.5rem;
+  animation: fadeUp 0.6s 0.3s ease both; align-items: center;
+}
+.doc-btn {
+  display: inline-flex; align-items: center; gap: 0.6rem;
+  padding: 0.8rem 1.5rem;
+  font-family: var(--mono); font-size: 0.72rem; font-weight: 700;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  text-decoration: none; border: none; cursor: pointer;
+  transition: all 0.25s; clip-path: polygon(6px 0%, 100% 0%, calc(100% - 6px) 100%, 0% 100%);
+}
+.doc-btn-primary { background: var(--cyan); color: var(--bg); }
+.doc-btn-primary:hover { box-shadow: 0 0 25px rgba(99,210,255,0.45); transform: translateY(-2px); }
+.doc-btn-ghost { background: transparent; color: var(--violet); border: 1px solid rgba(181,123,255,0.35); }
+.doc-btn-ghost:hover { background: rgba(181,123,255,0.06); border-color: var(--violet); box-shadow: 0 0 20px rgba(181,123,255,0.12); transform: translateY(-2px); }
+
+/* KPI STRIP */
+.kpi-strip {
+  background: var(--bg2); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+  position: relative; z-index: 1;
+}
+.kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 1.5px; background: var(--border); }
+.kpi-card { background: var(--bg2); padding: 1.75rem 1.25rem; text-align: center; }
+.kpi-val { font-family: var(--mono); font-size: 1.5rem; font-weight: 700; line-height: 1; margin-bottom: 0.4rem; }
+.kpi-label { font-size: 0.7rem; color: var(--muted); line-height: 1.4; }
+.cyan { color: var(--cyan); text-shadow: 0 0 20px rgba(99,210,255,0.3); }
+.red { color: var(--red); text-shadow: 0 0 20px rgba(255,77,77,0.3); }
+.yellow { color: var(--yellow); text-shadow: 0 0 20px rgba(255,201,60,0.3); }
+.green { color: var(--green); text-shadow: 0 0 20px rgba(57,255,143,0.3); }
+.violet { color: var(--violet); text-shadow: 0 0 20px rgba(181,123,255,0.3); }
+
+/* CONTENT SECTIONS */
+.content-section { padding: 4rem 0; border-bottom: 1px solid var(--border); position: relative; z-index: 1; }
+.content-section:last-child { border-bottom: none; }
+
+.sec-label { font-family: var(--mono); font-size: 0.62rem; color: var(--cyan); letter-spacing: 0.2em; text-transform: uppercase; margin-bottom: 0.5rem; opacity: 0.7; }
+.sec-title { font-size: clamp(1.4rem, 3vw, 2rem); font-weight: 700; letter-spacing: -0.02em; line-height: 1.15; margin-bottom: 1.25rem; }
+.sec-body { color: var(--muted); font-size: 0.95rem; line-height: 1.8; }
+.sec-body p + p { margin-top: 1rem; }
+.sec-body strong { color: var(--text); font-weight: 500; }
+.sec-body ul { padding-left: 1.25rem; margin-top: 0.75rem; margin-bottom: 0.75rem; }
+.sec-body ul li { margin-bottom: 0.35rem; }
+
+/* TWO COL */
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 2.5rem; align-items: start; }
+
+/* ISSUE CARDS */
+.issue-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5px; background: var(--border); border: 1px solid var(--border); margin-top: 2rem; }
+.issue-card { background: var(--bg); padding: 1.5rem; transition: background 0.2s; }
+.issue-card:hover { background: var(--bg3); }
+.issue-num { font-family: var(--mono); font-size: 0.58rem; color: var(--cyan); letter-spacing: 0.2em; margin-bottom: 0.75rem; opacity: 0.6; }
+.issue-title { font-size: 0.95rem; font-weight: 600; margin-bottom: 0.4rem; color: var(--text); }
+.issue-desc { font-size: 0.82rem; color: var(--muted); line-height: 1.55; }
+
+/* BUSINESS QUESTIONS */
+.bq-list { display: flex; flex-direction: column; gap: 1px; background: var(--border); border: 1px solid var(--border); margin-top: 2rem; }
+.bq-item { background: var(--bg2); padding: 1.5rem 2rem; display: flex; gap: 1.25rem; align-items: flex-start; }
+.bq-num { font-family: var(--mono); font-size: 0.65rem; color: var(--cyan); background: rgba(99,210,255,0.08); border: 1px solid var(--border2); width: 28px; height: 28px; border-radius: 2px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 2px; }
+.bq-q { font-size: 0.95rem; font-weight: 600; margin-bottom: 0.3rem; color: var(--text); }
+.bq-purpose { font-size: 0.82rem; color: var(--muted); }
+
+/* METHODOLOGY STEPS */
+.method-steps { display: flex; flex-direction: column; gap: 1.5px; background: var(--border); border: 1px solid var(--border); margin-top: 2rem; }
+.method-step { background: var(--bg); padding: 1.5rem 2rem; display: grid; grid-template-columns: 2rem 1fr; gap: 1rem; align-items: start; transition: background 0.2s; }
+.method-step:hover { background: var(--bg3); }
+.step-num { font-family: var(--mono); font-size: 0.65rem; color: var(--cyan); opacity: 0.6; margin-top: 0.15em; }
+.step-title { font-size: 0.95rem; font-weight: 600; margin-bottom: 0.3rem; color: var(--text); }
+.step-desc { font-size: 0.82rem; color: var(--muted); line-height: 1.55; }
+
+/* DATA SCHEMA STICKER */
+.schema-box { background: var(--bg3); border: 1px solid var(--border); padding: 1.5rem; margin-top: 1.5rem; }
+.schema-title { font-family: var(--mono); font-size: 0.65rem; color: var(--violet); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 0.75rem; }
+.schema-tags { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+.tag-code { font-family: var(--mono); font-size: 0.7rem; background: rgba(5,8,16,0.6); border: 1px solid var(--border); padding: 0.15rem 0.45rem; color: var(--cyan); border-radius: 2px; }
+
+/* FINDINGS */
+.finding-grid { display: flex; flex-direction: column; gap: 1rem; margin-top: 2rem; }
+.finding-card {
+  background: var(--bg2); border: 1px solid var(--border);
+  padding: 1.75rem 2rem;
+  display: grid; grid-template-columns: auto 1fr; gap: 1.25rem; align-items: start;
+  transition: border-color 0.2s;
+}
+.finding-card:hover { border-color: var(--border2); }
+.finding-icon { font-size: 1.5rem; line-height: 1; }
+.finding-label { font-family: var(--mono); font-size: 0.58rem; color: var(--violet); letter-spacing: 0.14em; text-transform: uppercase; margin-bottom: 0.35rem; }
+.finding-title { font-size: 1rem; font-weight: 600; margin-bottom: 0.5rem; color: var(--text); }
+.finding-body { font-size: 0.88rem; color: var(--muted); line-height: 1.65; }
+.finding-body strong { color: var(--text); }
+
+/* RESPONSIVE IFRAME CONTAINER FOR DASHBOARD */
+.dashboard-container {
+  position: relative;
+  width: 100%;
+  padding-top: 56.25%; /* 16:9 Aspect Ratio */
+  margin-top: 1.5rem;
+  border: 1px solid var(--border2);
+  background: var(--bg2);
+  border-radius: 2px;
+}
+.dashboard-container iframe {
+  position: absolute;
+  top: 0; left: 0; bottom: 0; right: 0;
+  width: 100%; height: 100%;
+  border: none;
+}
+
+/* RECOMMENDATION CARDS */
+.rec-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5px; background: var(--border); border: 1px solid var(--border); margin-top: 2rem; }
+.rec-card { background: var(--bg); padding: 2rem; transition: background 0.2s; }
+.rec-card:hover { background: var(--bg3); }
+.rec-num { font-family: var(--mono); font-size: 0.58rem; color: var(--cyan); letter-spacing: 0.2em; margin-bottom: 0.6rem; opacity: 0.6; }
+.rec-title { font-size: 1rem; font-weight: 600; margin-bottom: 0.5rem; color: var(--text); }
+.rec-body { font-size: 0.85rem; color: var(--muted); line-height: 1.65; }
+.rec-body strong { color: var(--text); }
+
+/* DOC SECTION */
+.doc-section { background: var(--bg2); border: 1px solid var(--border); padding: 2.5rem; margin-top: 2rem; }
+.doc-section-title { font-family: var(--mono); font-size: 0.65rem; color: var(--cyan); letter-spacing: 0.18em; text-transform: uppercase; margin-bottom: 1.5rem; opacity: 0.8; }
+.doc-links { display: flex; flex-wrap: wrap; gap: 1rem; }
+.doc-link-card {
+  flex: 1; min-width: 240px;
+  background: var(--bg3); border: 1px solid var(--border);
+  padding: 1.25rem 1.5rem;
+  text-decoration: none; color: inherit;
+  display: flex; align-items: center; gap: 1rem;
+  transition: all 0.25s;
+}
+.doc-link-card:hover { border-color: var(--border2); background: rgba(99,210,255,0.04); transform: translateY(-2px); }
+.doc-link-icon { font-size: 1.4rem; flex-shrink: 0; }
+.doc-link-type { font-family: var(--mono); font-size: 0.58rem; color: var(--muted); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 0.2rem; }
+.doc-link-name { font-size: 0.88rem; font-weight: 500; color: var(--cyan); }
+.doc-link-arrow { margin-left: auto; color: var(--muted); font-size: 1rem; transition: all 0.2s; }
+.doc-link-card:hover .doc-link-arrow { color: var(--cyan); transform: translateX(3px); }
+
+/* FOOTER */
+.case-footer { border-top: 1px solid var(--border); padding: 1.5rem clamp(1.5rem, 5vw, 4rem); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; position: relative; z-index: 1; }
+.footer-copy { font-family: var(--mono); font-size: 0.62rem; color: var(--muted); letter-spacing: 0.08em; }
+.footer-back { font-family: var(--mono); font-size: 0.62rem; color: var(--muted); text-decoration: none; transition: color 0.2s; }
+.footer-back:hover { color: var(--cyan); }
+
+/* LANG TRANSITION */
+[data-id] { transition: opacity 0.15s ease; }
+body.lang-switching [data-id] { opacity: 0; }
+
+/* ANIMATIONS */
+@keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+  .two-col { grid-template-columns: 1fr; gap: 1.5rem; }
+  .rec-grid { grid-template-columns: 1fr; }
+  .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+  .bq-item { flex-direction: column; gap: 0.75rem; }
+}
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+
+<nav>
+  <a href="index.html" class="nav-back">← <span data-id="nav-back">KEMBALI KE PORTFOLIO</span></a>
+  <a href="#" class="nav-logo">SAILY ROSHINA // PORTFOLIO</a>
+  <div class="nav-right">
+    <div class="lang-toggle">
+      <button class="lang-btn active" data-lang="id" onclick="setLang('id')">ID</button>
+      <button class="lang-btn" data-lang="en" onclick="setLang('en')">EN</button>
+    </div>
+  </div>
+</nav>
+
+<header class="case-hero">
+  <div class="wrapper">
+    <div class="case-eyebrow" data-id="hero-eyebrow">Sales · Retail · Data Analyst</div>
+    <h1 class="case-title" data-id="case-title">Analisis Performa & Tren Penjualan</h1>
+    <div class="case-subtitle" data-id="case-subtitle">TokoMart Indonesia · Analisis Penjualan Retail Multi-Cabang</div>
+    
+    <div class="case-meta">
+      <div class="meta-item">
+        <span class="meta-label" data-id="meta-label-1">Perusahaan</span>
+        <span class="meta-val" data-id="meta-val-1">TokoMart Indonesia</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label" data-id="meta-label-2">Industri</span>
+        <span class="meta-val" data-id="meta-val-2">Retail Minimarket</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label" data-id="meta-label-3">Periode</span>
+        <span class="meta-val" data-id="meta-val-3">Januari 2025 - Maret 2026</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label" data-id="meta-label-4">Tools</span>
+        <span class="meta-val" data-id="meta-val-4">Google Sheets</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label" data-id="meta-label-5">Role</span>
+        <span class="meta-val" data-id="meta-val-5">Data Analyst</span>
+      </div>
+    </div>
+
+    <div class="hero-pills">
+      <span class="pill">Sales Analysis</span>
+      <span class="pill">Business Insight</span>
+      <span class="pill">Dashboarding</span>
+      <span class="pill">Data Validation</span>
+    </div>
+
+    <div class="hero-narrative">
+      <p data-id="hero-desc-1">Project ini berfokus pada analisis performa penjualan multi-cabang untuk membantu Head of Commercial dalam mengambil keputusan awal menjelang periode Lebaran. Dalam konteks operasional retail yang dinamis, kebutuhan utama bukanlah analisis yang kompleks, tetapi insight yang cepat, jelas, dan dapat dipercaya sebagai dasar diskusi strategis.</p>
+      <p data-id="hero-desc-2">Pendekatan utama dalam project ini adalah memastikan bahwa setiap insight yang dihasilkan berasal dari data yang telah divalidasi dengan baik. Oleh karena itu, proses data cleaning, validation, dan penyusunan struktur summary menjadi fondasi utama sebelum menghasilkan dashboard dan rekomendasi bisnis.</p>
+    </div>
+
+    <div class="doc-buttons">
+      <a href="https://docs.google.com/spreadsheets/d/1ELFxht6pHOIlMmlsKyLoBSE63llzeq-WnOwoNyC5NXU/edit?usp=sharing" target="_blank" rel="noopener" class="doc-btn doc-btn-primary">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 3c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm7 13H5v-.23c0-.62.28-1.2.76-1.58C7.47 15.82 9.64 15 12 15s4.53.82 6.24 2.19c.48.38.76.97.76 1.58V19z"/></svg>
+        <span data-id="btn-dashboard">Buka Google Sheets</span>
+      </a>
+      <a href="https://canva.link/9bk7z12g9oeus85" target="_blank" rel="noopener" class="doc-btn doc-btn-ghost">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+        <span data-id="btn-slides">Lihat Presentasi</span>
+      </a>
+    </div>
+  </div>
+</header>
+
+<section class="kpi-strip">
+  <div class="kpi-grid">
+    <div class="kpi-card">
+      <div class="kpi-val cyan">IDR 26.07B</div>
+      <div class="kpi-label" data-id="kpi-1">Total Revenue</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-val red">23.8%</div>
+      <div class="kpi-label" data-id="kpi-2">Gap Performa Cabang</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-val violet">77.9%</div>
+      <div class="kpi-label" data-id="kpi-3">Kontribusi Electronics</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-val green">+35.4%</div>
+      <div class="kpi-label" data-id="kpi-4">Kenaikan Weekend Sales</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-val yellow">+30.4%</div>
+      <div class="kpi-label" data-id="kpi-5">Payday Effect</div>
+    </div>
+  </div>
+</section>
+
+<section class="content-section">
+  <div class="wrapper">
+    <div class="sec-label" data-id="sec-label-1">// 01 . Overview</div>
+    <h2 class="sec-title" data-id="sec-title-1">Project Overview & Konteks Bisnis</h2>
+    <div class="sec-body">
+      <p data-id="overview-p1">Project ini dirancang untuk membantu stakeholder memahami performa penjualan cabang dan pola perilaku pelanggan dalam waktu singkat. Fokus utama bukan hanya pada analisis angka, tetapi pada bagaimana memastikan data yang digunakan cukup valid untuk dijadikan dasar pengambilan keputusan awal bisnis.</p>
+      
+      <div class="two-col" style="margin-top: 2rem;">
+        <div>
+          <strong data-id="overview-sub-1">Konteks Bisnis</strong>
+          <p data-id="overview-sub-p1">TokoMart Indonesia merupakan jaringan minimarket dengan banyak cabang yang beroperasi secara simultan. Menjelang periode Lebaran, tekanan operasional meningkat sehingga keputusan harus diambil secara cepat dan berbasis data yang dapat dipercaya.</p>
+        </div>
+        <div>
+          <strong data-id="overview-sub-2">Tantangan Data</strong>
+          <p data-id="overview-sub-p3">Data mentah dari sistem POS memiliki berbagai permasalahan seperti duplikasi transaksi, nilai tidak valid, dan ketidaksesuaian periode waktu. Tanpa validasi yang tepat, insight yang dihasilkan berisiko menyesatkan keputusan bisnis.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="content-section">
+  <div class="wrapper">
+    <div class="sec-label" data-id="sec-label-2">// 02 . Problem Statement</div>
+    <h2 class="sec-title" data-id="sec-title-2">Masalah Utama & Dampak Finansial</h2>
+    <div class="sec-body">
+      <p data-id="problem-p1">Sistem data retail TokoMart saat ini memiliki beberapa kendala mendasar pada data mentah serta visualisasi tren penjualan. Masalah ini berdampak langsung pada kecepatan manajemen komersial dalam membaca pola performa antar wilayah cabang.</p>
+      
+      <div class="issue-grid">
+        <div class="issue-card">
+          <div class="issue-num">ISSUE_01</div>
+          <div class="issue-title" data-id="issue-t1">Data Tidak Siap Pakai</div>
+          <div class="issue-desc" data-id="issue-d1">Data mentah mengandung anomali seperti duplikasi, nilai nol, dan outlier yang dapat mempengaruhi hasil analisis.</div>
+        </div>
+        <div class="issue-card">
+          <div class="issue-num">ISSUE_02</div>
+          <div class="issue-title" data-id="issue-t2">Kesulitan Identifikasi Cabang Prioritas</div>
+          <div class="issue-desc" data-id="issue-d2">Tanpa ringkasan yang tepat, sulit menentukan cabang mana yang perlu difokuskan terlebih dahulu.</div>
+        </div>
+        <div class="issue-card">
+          <div class="issue-num">ISSUE_03</div>
+          <div class="issue-title" data-id="issue-t3">Pola Penjualan Tidak Terbaca</div>
+          <div class="issue-desc" data-id="issue-d3">Tidak adanya analisis tren menyebabkan peluang momentum penjualan tidak dimanfaatkan secara optimal.</div>
+        </div>
+      </div>
+
+      <p style="margin-top: 2rem;" data-id="problem-p2"><strong>Business Impact:</strong> Data transaksi yang belum tervalidasi dengan baik berisiko menghasilkan kesimpulan analisis performa yang bias. Akibatnya, alokasi promosi produk atau persiapan stok barang di minimarket cabang menjadi kurang akurat dan rentan melewatkan momentum puncak pembelian pelanggan.</p>
+    </div>
+  </div>
+</section>
+
+<section class="content-section">
+  <div class="wrapper">
+    <div class="sec-label" data-id="sec-label-3">// 03 . Scope & Questions</div>
+    <h2 class="sec-title" data-id="sec-title-3">Pertanyaan Bisnis & Ruang Lingkup</h2>
+    <div class="sec-body">
+      <p data-id="scope-p1">Ruang lingkup proyek ini mencakup pemrosesan seluruh log transaksi ritel cabang untuk memetakan performa profitabilitas, kontribusi produk, dan tren waktu belanja.</p>
+      
+      <div class="bq-list">
+        <div class="bq-item">
+          <div class="bq-num">?</div>
+          <div>
+            <div class="bq-q" data-id="bq-q1">Cabang mana yang paling profitable?</div>
+            <div class="bq-purpose" data-id="bq-p1">Tujuan: Identifikasi top & bottom branch</div>
+          </div>
+        </div>
+        <div class="bq-item">
+          <div class="bq-num">?</div>
+          <div>
+            <div class="bq-q" data-id="bq-q2">Produk apa yang paling banyak terjual?</div>
+            <div class="bq-purpose" data-id="bq-p2">Tujuan: Analisis demand & kontribusi kategori</div>
+          </div>
+        </div>
+        <div class="bq-item">
+          <div class="bq-num">?</div>
+          <div>
+            <div class="bq-q" data-id="bq-q3">Apakah terdapat pola musiman dalam penjualan?</div>
+            <div class="bq-purpose" data-id="bq-p3">Tujuan: Identifikasi peak & low sales period</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="content-section">
+  <div class="wrapper">
+    <div class="sec-label" data-id="sec-label-4">// 04 . Objectives & Urgency</div>
+    <h2 class="sec-title" data-id="sec-title-4">Tujuan Strategis & Tingkat Urgensi</h2>
+    <div class="sec-body">
+      <p data-id="obj-p1">Tujuan utama dari analisis ini adalah menyediakan basis data penjualan ritel multi-cabang yang bersih, andal, dan ringkas guna mempermudah diskusi perencanaan operasional komersial.</p>
+      <div style="background: rgba(255,77,77,0.05); border: 1px solid rgba(255,77,77,0.2); padding: 1.5rem; margin-top: 1.5rem;">
+        <span style="font-family: var(--mono); font-size: 0.7rem; color: var(--red); display: block; margin-bottom: 0.25rem; font-weight: 700;" data-id="urgency-label">🚨 WHY IT MATTERS NOW</span>
+        <p style="font-size: 0.95rem; margin: 0;" data-id="urgency-text">Tekanan pasar ritel minimarket menjelang simulasi pra-Lebaran bergerak sangat dinamis. Penundaan validasi data transaksi berpotensi menghambat Head of Commercial dalam menentukan strategi penawaran promosi produk secara tepat waktu.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="content-section">
+  <div class="wrapper">
+    <div class="sec-label" data-id="sec-label-5">// 05 . Pipeline Workflow</div>
+    <h2 class="sec-title" data-id="sec-title-5">Arsitektur Data & Alur Kerja Sistem</h2>
+    <div class="sec-body">
+      <p data-id="pipeline-p1">Alur pemrosesan data dilakukan secara bertahap menggunakan Microsoft Excel guna memastikan kualitas data sebelum divisualisasikan pada ringkasan eksekutif.</p>
+      
+      <div class="method-steps">
+        <div class="method-step">
+          <div class="step-num">01</div>
+          <div>
+            <div class="step-title" data-id="step-t1">Data Cleaning & Validation</div>
+            <div class="step-desc" data-id="step-d1">Membersihkan duplikasi, nilai tidak valid, zero price, dan data di luar periode</div>
+          </div>
+        </div>
+        <div class="method-step">
+          <div class="step-num">02</div>
+          <div>
+            <div class="step-title" data-id="step-t2">Penyusunan Summary Analisis</div>
+            <div class="step-desc" data-id="step-d2">Membuat Branch Summary, Category Contribution, dan Trend Summary berbasis Pivot Table.</div>
+          </div>
+        </div>
+        <div class="method-step">
+          <div class="step-num">03</div>
+          <div>
+            <div class="step-title" data-id="step-t3">Dashboarding & Insight</div>
+            <div class="step-desc" data-id="step-d3">Visualisasi data dan penyusunan rekomendasi bisnis komersial.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="schema-box">
+        <div class="schema-title" data-id="schema-title">Data yang Diproses</div>
+        <div class="schema-tags">
+          <span class="tag-code">Date</span><span class="tag-code">BranchID</span><span class="tag-code">BranchName</span><span class="tag-code">ProductCategory</span><span class="tag-code">ProductName</span><span class="tag-code">Quantity</span><span class="tag-code">Price</span><span class="tag-code">TotalSales</span><span class="tag-code">SalesPerson</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="content-section" id="findings">
+  <div class="wrapper">
+    <div class="sec-label" data-id="sec-label-6">// 06 . Executive Summary & Insights</div>
+    <h2 class="sec-title" data-id="sec-title-6">Ringkasan Eksekutif & Temuan Analisis</h2>
+    <div class="sec-body">
+      <p data-id="finding-intro-1">Hasil pengolahan data menunjukkan total revenue TokoMart mencapai <strong>IDR 26.07 Billion</strong>. Analisis sebaran performa cabang memperlihatkan distribusi penjualan yang relatif stabil, namun masih ditemukan celah profitabilitas yang potensial dioptimalkan pada lini produk tertentu.</p>
+      <p style="color: var(--cyan);" data-id="finding-intro-2">Kesimpulan Utama: Optimasi performa TokoMart dapat dicapai secara maksimal dengan memanfaatkan momentum kenaikan pola belanja di akhir pekan (weekend) serta pola gajian pelanggan (payday effect).</p>
+
+      <div class="finding-grid">
+        <div class="finding-card">
+          <div class="finding-icon">📉</div>
+          <div>
+            <div class="finding-label" data-id="f-lbl-1">Temuan 01</div>
+            <div class="finding-title" data-id="f-t1">Gap Performa Cabang</div>
+            <div class="finding-body" data-id="f-b1">Distribusi performa antar cabang terlihat relatif merata (sekitar 9–11%), namun terdapat gap signifikan sebesar 23.8% antara cabang terbaik (South Jakarta) dan cabang dengan performa terendah (Bandung Main). Hal ini menunjukkan adanya potensi optimasi pada cabang dengan performa rendah.</div>
+          </div>
+        </div>
+        
+        <div class="finding-card">
+          <div class="finding-icon">🧴</div>
+          <div>
+            <div class="finding-label" data-id="f-lbl-2">Temuan 02</div>
+            <div class="finding-title" data-id="f-t2">Dominasi Revenue oleh Electronics</div>
+            <div class="finding-body" data-id="f-b2">Kategori electronics menyumbang 77.9% dari total revenue, sementara kategori lain memiliki kontribusi yang jauh lebih kecil. Hal ini menunjukkan ketergantungan bisnis yang tinggi terhadap produk bernilai tinggi.</div>
+          </div>
+        </div>
+
+        <div class="finding-card">
+          <div class="finding-icon">📅</div>
+          <div>
+            <div class="finding-label" data-id="f-lbl-3">Temuan 03</div>
+            <div class="finding-title" data-id="f-t3">Pola Penjualan Weekend</div>
+            <div class="finding-body" data-id="f-b3">Penjualan pada akhir pekan meningkat sebesar 35.4% dibandingkan hari kerja, dengan Sabtu sebagai hari dengan performa tertinggi dan Kamis sebagai hari terlemah. Hal ini menunjukkan adanya pola perilaku belanja berbasis waktu.</div>
+          </div>
+        </div>
+
+        <div class="finding-card">
+          <div class="finding-icon">💰</div>
+          <div>
+            <div class="finding-label" data-id="f-lbl-4">Temuan 04</div>
+            <div class="finding-title" data-id="f-t4">Payday Effect pada Perilaku Konsumen</div>
+            <div class="finding-body" data-id="f-b4">Terdapat peningkatan penjualan sebesar 30.4% pada awal bulan (tanggal 1–5) dibandingkan periode lainnya. Rata-rata penjualan harian mencapai IDR 72M pada awal bulan, dibandingkan IDR 55M pada hari lainnya.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="content-section" id="dashboard">
+  <div class="wrapper">
+    <div class="sec-label" data-id="sec-label-embed">// 07 . Dashboard</div>
+    <h2 class="sec-title" data-id="sec-title-embed">Data Visualization</h2>
+    <div class="sec-body">
+      <p data-id="embed-desc">Berikut adalah tampilan lembar dashboard interaktif live yang menyajikan visualisasi ringkasan performa dan tren penjualan retail TokoMart Indonesia:</p>
+      <div class="dashboard-container">
+        <iframe src="https://docs.google.com/spreadsheets/d/e/2PACX-1vREp6jUL8A3Q-85ltn37UWGz7l06psZK586zLRYkn91Gum6z9G2Pb7AtlOfl-pfuVfIct01fGHL7hRC/pubhtml?gid=105658890&amp;single=true&amp;widget=true&amp;headers=false"></iframe>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="content-section" id="recommendations">
+  <div class="wrapper">
+    <div class="sec-label" data-id="sec-label-7">// 08 . Recommendations</div>
+    <h2 class="sec-title" data-id="sec-title-7">Rekomendasi Aksi Taktikal Bisnis</h2>
+    <div class="sec-body">
+      <p data-id="rec-intro">Berdasarkan ringkasan temuan data di atas, berikut adalah rekomendasi taktis operasional yang dapat dipertimbangkan:</p>
+      
+      <div class="rec-grid">
+        <div class="rec-card">
+          <div class="rec-num">01</div>
+          <div class="rec-title" data-id="rec-t1">Maksimalkan Penjualan Weekend</div>
+          <div class="rec-body" data-id="rec-b1">Fokus pada strategi promosi khusus akhir pekan seperti diskon, bundling produk, dan campaign tematik. Pastikan ketersediaan stok serta kesiapan operasional untuk mengakomodasi lonjakan permintaan.</div>
+        </div>
+
+        <div class="rec-card">
+          <div class="rec-num">02</div>
+          <div class="rec-title" data-id="rec-t2">Optimasi Cabang dengan Performa Rendah</div>
+          <div class="rec-body" data-id="rec-b2">Lakukan evaluasi performa cabang dengan kontribusi rendah, identifikasi faktor penyebab, dan replikasi strategi dari cabang dengan performa terbaik untuk meningkatkan kinerja.</div>
+        </div>
+
+        <div class="rec-card">
+          <div class="rec-num">03</div>
+          <div class="rec-title" data-id="rec-t3">Tingkatkan Kontribusi Non-Electronics</div>
+          <div class="rec-body" data-id="rec-b3">Dorong peningkatan kontribusi kategori selain electronics melalui strategi cross-selling, bundling, dan promosi produk dengan harga menengah untuk mengurangi ketergantungan terhadap satu kategori utama.</div>
+        </div>
+
+        <div class="rec-card">
+          <div class="rec-num">04</div>
+          <div class="rec-title" data-id="rec-t4">Manfaatkan Momentum Payday</div>
+          <div class="rec-body" data-id="rec-b4">Jalankan campaign khusus pada awal bulan (tanggal 1–5) seperti promo payday, cashback, atau diskon terbatas untuk memaksimalkan perilaku belanja pelanggan yang meningkat pada periode tersebut.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="content-section">
+  <div class="wrapper">
+    <div class="doc-section">
+      <div class="doc-section-title" data-id="doc-section-title">// Project Documents & Artefak Analisis</div>
+      <div class="sec-body" style="margin-bottom: 1.5rem;">
+        <p data-id="doc-p">Seluruh proses pengolahan data, formula pembersihan data, serta ringkasan pivot sheet disusun secara transparan dan dapat diakses melalui tautan dokumentasi di bawah ini:</p>
+      </div>
+      <div class="doc-links">
+        <a href="https://docs.google.com/spreadsheets/d/1ELFxht6pHOIlMmlsKyLoBSE63llzeq-WnOwoNyC5NXU/edit?usp=sharing" target="_blank" rel="noopener" class="doc-link-card">
+          <div class="doc-link-icon">📊</div>
+          <div>
+            <div class="doc-link-type" data-id="doc1-type">Google Sheets</div>
+            <div class="doc-link-name" data-id="doc1-name">Sales Performance Model (Full Processing)</div>
+          </div>
+          <div class="doc-link-arrow">→</div>
+        </a>
+        <a href="https://canva.link/9bk7z12g9oeus85" target="_blank" rel="noopener" class="doc-link-card">
+          <div class="doc-link-icon">🖥️</div>
+          <div>
+            <div class="doc-link-type" data-id="doc2-type">Presentation Deck</div>
+            <div class="doc-link-name" data-id="doc2-name">Commercial Deck Analysis — Pre-Lebaran</div>
+          </div>
+          <div class="doc-link-arrow">→</div>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="case-footer">
+  <div class="footer-copy" data-id="footer-copy">© 2026 SAILY ROSHINA AYU VIDIANA. ALL RIGHTS RESERVED.</div>
+  <a href="index.html" class="footer-back">← <span data-id="footer-back">KEMBALI KE PORTFOLIO</span></a>
+</footer>
+
+<script>
+const T = {
+  id: {
+    'nav-back': 'KEMBALI KE PORTFOLIO',
+    'hero-eyebrow': 'Sales · Retail · Data Analyst',
+    'case-title': 'Analisis Performa & Tren Penjualan',
+    'case-subtitle': 'TokoMart Indonesia · Analisis Penjualan Retail Multi-Cabang',
+    'meta-label-1': 'Perusahaan', 'meta-val-1': 'TokoMart Indonesia',
+    'meta-label-2': 'Industri', 'meta-val-2': 'Retail Minimarket',
+    'meta-label-3': 'Periode', 'meta-val-3': 'Januari 2025 - Maret 2026',
+    'meta-label-4': 'Tools', 'meta-val-4': 'Google Sheets',
+    'meta-label-5': 'Role', 'meta-val-5': 'Data Analyst',
+    'hero-desc-1': 'Project ini berfokus pada analisis performa penjualan multi-cabang untuk membantu Head of Commercial dalam mengambil keputusan awal menjelang periode Lebaran. Dalam konteks operasional retail yang dinamis, kebutuhan utama bukanlah analisis yang kompleks, tetapi insight yang cepat, jelas, dan dapat dipercaya sebagai dasar diskusi strategis.',
+    'hero-desc-2': 'Pendekatan utama dalam project ini adalah memastikan bahwa setiap insight yang dihasilkan berasal dari data yang telah divalidasi dengan baik. Oleh karena itu, proses data cleaning, validation, dan penyusunan struktur summary menjadi fondasi utama sebelum menghasilkan dashboard dan rekomendasi bisnis.',
+    'btn-dashboard': 'Buka Google Sheets',
+    'btn-slides': 'Lihat Presentasi',
+    'kpi-1': 'Total Revenue', 'kpi-2': 'Gap Performa Cabang', 'kpi-3': 'Kontribusi Electronics', 'kpi-4': 'Kenaikan Weekend Sales', 'kpi-5': 'Payday Effect',
+    'sec-label-1': '// 01 . Overview', 'sec-title-1': 'Project Overview & Konteks Bisnis',
+    'overview-p1': 'Project ini dirancang untuk membantu stakeholder memahami performa penjualan cabang dan pola perilaku pelanggan dalam waktu singkat. Fokus utama bukan hanya pada analisis angka, tetapi pada bagaimana memastikan data yang digunakan cukup valid untuk dijadikan dasar pengambilan keputusan awal bisnis.',
+    'overview-sub-1': 'Konteks Bisnis',
+    'overview-sub-p1': 'TokoMart Indonesia merupakan jaringan minimarket dengan banyak cabang yang beroperasi secara simultan. Menjelang periode Lebaran, tekanan operasional meningkat sehingga keputusan harus diambil secara cepat dan berbasis data yang dapat dipercaya.',
+    'overview-sub-2': 'Tantangan Data',
+    'overview-sub-p3': 'Data mentah dari sistem POS memiliki berbagai permasalahan seperti duplikasi transaksi, nilai tidak valid, dan ketidaksesuaian periode waktu. Tanpa validasi yang tepat, insight yang dihasilkan berisiko menyesatkan keputusan bisnis.',
+    'sec-label-2': '// 02 . Problem Statement', 'sec-title-2': 'Masalah Utama & Dampak Finansial',
+    'problem-p1': 'Sistem data retail TokoMart saat ini memiliki beberapa kendala mendasar pada data mentah serta visualisasi tren penjualan. Masalah ini berdampak langsung pada kecepatan manajemen komersial dalam membaca pola performa antar wilayah cabang.',
+    'issue-t1': 'Data Tidak Siap Pakai', 'issue-d1': 'Data mentah mengandung anomali seperti duplikasi, nilai nol, dan outlier yang dapat mempengaruhi hasil analisis.',
+    'issue-t2': 'Kesulitan Identifikasi Cabang Prioritas', 'issue-d2': 'Tanpa ringkasan yang tepat, sulit menentukan cabang mana yang perlu difokuskan terlebih dahulu.',
+    'issue-t3': 'Pola Penjualan Tidak Terbaca', 'issue-d3': 'Tidak adanya analisis tren menyebabkan peluang momentum penjualan tidak dimanfaatkan secara optimal.',
+    'problem-p2': 'Business Impact: Data transaksi yang belum tervalidasi dengan baik berisiko menghasilkan kesimpulan analisis performa yang bias. Akibatnya, alokasi promosi produk atau persiapan stok barang di minimarket cabang menjadi kurang akurat dan rentan melewatkan momentum puncak pembelian pelanggan.',
+    'sec-label-3': '// 03 . Scope & Questions', 'sec-title-3': 'Pertanyaan Bisnis & Ruang Lingkup',
+    'scope-p1': 'Ruang lingkup proyek ini mencakup pemrosesan seluruh log transaksi ritel cabang untuk memetakan performa profitabilitas, kontribusi produk, dan tren waktu belanja.',
+    'bq-q1': 'Cabang mana yang paling profitable?', 'bq-p1': 'Tujuan: Identifikasi top & bottom branch',
+    'bq-q2': 'Produk apa yang paling banyak terjual?', 'bq-p2': 'Tujuan: Analisis demand & kontribusi kategori',
+    'bq-q3': 'Apakah terdapat pola musiman dalam penjualan?', 'bq-p3': 'Tujuan: Identifikasi peak & low sales period',
+    'sec-label-4': '// 04 . Objectives & Urgency', 'sec-title-4': 'Tujuan Strategis & Tingkat Urgensi',
+    'obj-p1': 'Tujuan utama dari analisis ini adalah menyediakan basis data penjualan ritel multi-cabang yang bersih, andal, dan ringkas guna mempermudah diskusi perencanaan operasional komersial.',
+    'urgency-label': '🚨 WHY IT MATTERS NOW', 'urgency-text': 'Tekanan pasar ritel minimarket menjelang simulasi pra-Lebaran bergerak sangat dinamis. Penundaan validasi data transaksi berpotensi menghambat Head of Commercial dalam menentukan strategi penawaran promosi produk secara tepat waktu.',
+    'sec-label-5': '// 05 . Pipeline Workflow', 'sec-title-5': 'Arsitektur Data & Alur Kerja Sistem',
+    'pipeline-p1': 'Alur pemrosesan data dilakukan secara bertahap menggunakan Microsoft Excel guna memastikan kualitas data sebelum divisualisasikan pada ringkasan eksekutif.',
+    'step-t1': 'Data Cleaning & Validation', 'step-d1': 'Membersihkan duplikasi, nilai tidak valid, zero price, dan data di luar periode',
+    'step-t2': 'Penyusunan Summary Analisis', 'step-d2': 'Membuat Branch Summary, Category Contribution, dan Trend Summary berbasis Pivot Table.',
+    'step-t3': 'Dashboarding & Insight', 'step-d3': 'Visualisasi data dan penyusunan rekomendasi bisnis komersial.',
+    'schema-title': 'Data yang Diproses',
+    
+    // Section 06 Kamus ID
+    'sec-label-6': '// 06 . Executive Summary & Insights', 'sec-title-6': 'Ringkasan Eksekutif & Temuan Analisis',
+    'finding-intro-1': 'Hasil pengolahan data menunjukkan total revenue TokoMart mencapai IDR 26.07 Billion. Analisis sebaran performa cabang memperlihatkan distribusi penjualan yang relatif stabil, namun masih ditemukan celah profitabilitas yang potensial dioptimalkan pada lini produk tertentu.',
+    'finding-intro-2': 'Kesimpulan Utama: Optimasi performa TokoMart dapat dicapai secara maksimal dengan memanfaatkan momentum kenaikan pola belanja di akhir pekan (weekend) serta pola gajian pelanggan (payday effect).',
+    'f-lbl-1': 'Temuan 01', 'f-t1': 'Gap Performa Cabang', 'f-b1': 'Distribusi performa antar cabang terlihat relatif merata (sekitar 9–11%), namun terdapat gap signifikan sebesar 23.8% antara cabang terbaik (South Jakarta) dan cabang dengan performa terendah (Bandung Main). Hal ini menunjukkan adanya potensi optimasi pada cabang dengan performa rendah.',
+    'f-lbl-2': 'Temuan 02', 'f-t2': 'Dominasi Revenue oleh Electronics', 'f-b2': 'Kategori electronics menyumbang 77.9% dari total revenue, sementara kategori lain memiliki kontribusi yang jauh lebih kecil. Hal ini menunjukkan ketergantungan bisnis yang tinggi terhadap produk bernilai tinggi.',
+    'f-lbl-3': 'Temuan 03', 'f-t3': 'Pola Penjualan Weekend', 'f-b3': 'Penjualan pada akhir pekan meningkat sebesar 35.4% dibandingkan hari kerja, dengan Sabtu sebagai hari dengan performa tertinggi dan Kamis sebagai hari terlemah. Hal ini menunjukkan adanya pola perilaku belanja berbasis waktu.',
+    'f-lbl-4': 'Temuan 04', 'f-t4': 'Payday Effect pada Perilaku Konsumen', 'f-b4': 'Terdapat peningkatan penjualan sebesar 30.4% pada awal bulan (tanggal 1–5) dibandingkan periode lainnya. Rata-rata penjualan harian mencapai IDR 72M pada awal bulan, dibandingkan IDR 55M pada hari lainnya.',
+    
+    // Section 07 Kamus ID
+    'sec-label-embed': '// 07 . Dashboard', 'sec-title-embed': 'Data Visualization',
+    'embed-desc': 'Berikut adalah tampilan lembar dashboard interaktif live yang menyajikan visualisasi ringkasan performa dan tren penjualan retail TokoMart Indonesia:',
+    
+    // Section 08 Kamus ID
+    'sec-label-7': '// 08 . Recommendations', 'sec-title-7': 'Rekomendasi Aksi Taktikal Bisnis',
+    'rec-intro': 'Berdasarkan ringkasan temuan data di atas, berikut adalah rekomendasi taktis operasional yang dapat dipertimbangkan:',
+    'rec-t1': 'Maksimalkan Penjualan Weekend', 'rec-b1': 'Fokus pada strategi promosi khusus akhir pekan seperti diskon, bundling produk, dan campaign tematik. Pastikan ketersediaan stok serta kesiapan operasional untuk mengakomodasi lonjakan permintaan.',
+    'rec-t2': 'Optimasi Cabang dengan Performa Rendah', 'rec-b2': 'Lakukan evaluasi performa cabang dengan kontribusi rendah, identifikasi faktor penyebab, dan replikasi strategi dari cabang dengan performa terbaik untuk meningkatkan kinerja.',
+    'rec-t3': 'Tingkatkan Kontribusi Non-Electronics', 'rec-b3': 'Dorong peningkatan kontribusi kategori selain electronics melalui strategi cross-selling, bundling, dan promosi produk dengan harga menengah untuk mengurangi ketergantungan terhadap satu kategori utama.',
+    'rec-t4': 'Manfaatkan Momentum Payday', 'rec-b4': 'Jalankan campaign khusus pada awal bulan (tanggal 1–5) seperti promo payday, cashback, atau diskon terbatas untuk memaksimalkan perilaku belanja pelanggan yang meningkat pada periode tersebut.',
+    
+    'doc-section-title': '// Project Documents & Artefak Analisis',
+    'doc-p': 'Seluruh proses pengolahan data, formula pembersihan data, serta ringkasan pivot sheet disusun secara transparan dan dapat diakses melalui tautan dokumentasi di bawah ini:',
+    'doc1-type': 'Google Sheets', 'doc1-name': 'Sales Performance Model (Full Processing)',
+    'doc2-type': 'Presentation Deck', 'doc2-name': 'Commercial Deck Analysis — Pre-Lebaran',
+    'footer-copy': '© 2026 SAILY ROSHINA AYU VIDIANA. ALL RIGHTS RESERVED.',
+    'footer-back': 'KEMBALI KE PORTFOLIO'
+  },
+  en: {
+    'nav-back': 'BACK TO PORTFOLIO',
+    'hero-eyebrow': 'Sales · Retail · Data Analyst',
+    'case-title': 'Sales Performance & Trend Analysis',
+    'case-subtitle': 'TokoMart Indonesia · Multi-Branch Retail Sales Analysis',
+    'meta-label-1': 'Company', 'meta-val-1': 'TokoMart Indonesia',
+    'meta-label-2': 'Industry', 'meta-val-2': 'Retail Minimarket',
+    'meta-label-3': 'Period', 'meta-val-3': 'January 2025 - March 2026',
+    'meta-label-4': 'Tools', 'meta-val-4': 'Google Sheets',
+    'meta-label-5': 'Role', 'meta-val-5': 'Data Analyst',
+    'hero-desc-1': 'This project focuses on multi-branch sales performance analysis to support the Head of Commercial in making early decisions ahead of the Ramadan peak season. In a fast-moving retail environment, the priority is not complex analysis, but clear, reliable insights that can drive initial strategic discussions.',
+    'hero-desc-2': 'The main approach in this project is ensuring that every insight is built on validated and reliable data. Therefore, data cleaning, validation, and structured summarization serve as the foundation before delivering dashboards and actionable business recommendations.',
+    'btn-dashboard': 'Open Google Sheets',
+    'btn-slides': 'View Presentasion',
+    'kpi-1': 'Total Revenue', 'kpi-2': 'Branch Performance Gap', 'kpi-3': 'Electronics Contribution', 'kpi-4': 'Weekend Sales Uplift', 'kpi-5': 'Payday Effect',
+    'sec-label-1': '// 01 . Overview', 'sec-title-1': 'Project Overview & Business Context',
+    'overview-p1': 'This project is designed to help stakeholders quickly understand branch performance and customer behavior patterns. The focus is not only on analyzing numbers, but on ensuring the data is reliable enough to support early-stage business decision making.',
+    'overview-sub-1': 'Business Context',
+    'overview-sub-p1': 'TokoMart Indonesia operates as a multi-branch minimarket chain. During the Ramadan period, operational pressure increases, requiring fast decisions based on reliable and actionable data.',
+    'overview-sub-2': 'Data Challenges',
+    'overview-sub-p3': 'Raw POS data contains multiple issues such as duplicate transactions, invalid values, and inconsistent time periods. Without proper validation, insights may lead to misleading business decisions.',
+    'sec-label-2': '// 02 . Problem Statement', 'sec-title-2': 'Core Problems & Financial Impact',
+    'problem-p1': 'TokoMart\'s retail data system currently faces several fundamental issues with raw data and sales trend visualization. These problems directly impact the speed of commercial management in reading performance patterns across branch territories.',
+    'issue-t1': 'Unreliable Raw Data', 'issue-d1': 'Raw data contains anomalies such as duplicates, zero values, and outliers that can distort analysis results.',
+    'issue-t2': 'Difficulty Identifying Priority Branches', 'issue-d2': 'Without structured summaries, it is difficult to determine which branches require immediate attention.',
+    'issue-t3': 'Unclear Sales Patterns', 'issue-d3': 'Lack of trend analysis prevents the business from leveraging key sales momentum opportunities.',
+    'problem-p2': 'Business Impact: Unvalidated transaction data risks producing biased conclusions regarding performance analysis. Consequently, promotional product allocation or stock preparation in minimarket branches becomes less accurate and prone to missing peak customer buying momentum.',
+    'sec-label-3': '// 03 . Scope & Questions', 'sec-title-3': 'Business Questions & Analytical Scope',
+    'scope-p1': 'The scope of this project covers processing all branch retail transaction logs to map profitability performance, product contributions, and shopping time trends.',
+    'bq-q1': 'Which branch is the most profitable?', 'bq-p1': 'Goal: Top & bottom branch identification',
+    'bq-q2': 'Which products sell the most?', 'bq-p2': 'Goal: Demand & category contribution analysis',
+    'bq-q3': 'Are there any seasonal trends?', 'bq-p3': 'Goal: Peak & low sales period identification',
+    'sec-label-4': '// 04 . Objectives & Urgency', 'sec-title-4': 'Strategic Objectives & Urgency Level',
+    'obj-p1': 'The primary objective of this analysis is to provide a clean, reliable, and concise multi-branch retail sales database to facilitate commercial operational planning discussions.',
+    'urgency-label': '🚨 WHY IT MATTERS NOW', 'urgency-text': 'Minimarket retail market pressure ahead of the pre-Lebaran simulation moves very dynamically. Delays in data transaction validation could potentially hinder the Head of Commercial from determining product promotion strategies in a timely manner.',
+    'sec-label-5': '// 05 . Pipeline Workflow', 'sec-title-5': 'Data Architecture & System Workflow',
+    'pipeline-p1': 'The data processing workflow is carried out in stages using Microsoft Excel to ensure data quality before being visualized in the executive summary.',
+    'step-t1': 'Data Cleaning & Validation', 'step-d1': 'Cleaning duplicates, invalid values, zero-price transactions, and out-of-range dates',
+    'step-t2': 'Data Summarization', 'step-d2': 'Building branch, category, and trend summaries based on Pivot Tables.',
+    'step-t3': 'Dashboarding & Insights', 'step-d3': 'Data visualization and commercial recommendation development.',
+    'schema-title': 'Processed Data',
+    
+    // Section 06 Kamus EN
+    'sec-label-6': '// 06 . Executive Summary & Insights', 'sec-title-6': 'Executive Summary & Analytical Insights',
+    'finding-intro-1': 'The processed data reveals total revenue reaching IDR 26.07 Billion. The branch performance distribution appears relatively stable, yet potential profitability gaps can still be optimized within specific product lines.',
+    'finding-intro-2': 'Core Conclusion: Maximizing TokoMart\'s performance can be achieved by leveraging the increased purchasing patterns during weekends and customer payday effects.',
+    'f-lbl-1': 'Insight 01', 'f-t1': 'Branch Performance Gap', 'f-b1': 'Branch performance is relatively evenly distributed (~9–11%), but a significant gap of 23.8% exists between the top-performing branch (South Jakarta) and the lowest-performing branch (Bandung Main), indicating optimization potential in underperforming locations.',
+    'f-lbl-2': 'Insight 02', 'f-t2': 'Electronics Revenue Dominance', 'f-b2': 'Electronics contributes 77.9% of total revenue, while other categories contribute significantly less, indicating a strong dependency on high-value products.',
+    'f-lbl-3': 'Insight 03', 'f-t3': 'Weekend Sales Pattern', 'f-b3': 'Weekend sales outperform weekdays by 35.4%, with Saturday as the strongest day and Thursday as the weakest, indicating time-based shopping behavior.',
+    'f-lbl-4': 'Insight 04', 'f-t4': 'Payday Effect on Customer Behavior', 'f-b4': 'A 30.4% increase in sales is observed during the first 5 days of the month, with average daily sales reaching IDR 72M compared to IDR 55M on other days, indicating a strong payday effect.',
+    
+    // Section 07 Kamus EN
+    'sec-label-embed': '// 07 . Dashboard', 'sec-title-embed': 'Data Visualization',
+    'embed-desc': 'Below is the interactive live dashboard presenting the sales performance and trend visuals for TokoMart Indonesia:',
+    
+    // Section 08 Kamus EN
+    'sec-label-7': '// 08 . Recommendations', 'sec-title-7': 'Tactical Business Action Recommendations',
+    'rec-intro': 'Based on the analytical insights above, the following operational recommendations are suggested:',
+    'rec-t1': 'Maximize Weekend Sales', 'rec-b1': 'Implement weekend-specific promotions such as discounts, product bundling, and thematic campaigns. Ensure stock availability and operational readiness to capture peak demand.',
+    'rec-t2': 'Optimize Underperforming Branches', 'rec-b2': 'Conduct performance reviews on low-performing branches, identify root causes, and replicate best practices from top-performing branches.',
+    'rec-t3': 'Increase Non-Electronics Contribution', 'rec-b3': 'Increase non-electronics contribution through cross-selling strategies, bundling, and promotion of mid-priced products to reduce dependency on a single category.',
+    'rec-t4': 'Leverage Payday Momentum', 'rec-b4': 'Launch payday campaigns during the first 5 days of the month, such as cashback offers or limited-time discounts, to maximize increased customer spending behavior.',
+    
+    'doc-section-title': '// Project Documents & Analysis Artifacts',
+    'doc-p': 'The entire data processing workflow, formulas, and pivot sheet structures are transparently compiled and accessible via the official documentation links below:',
+    'doc1-type': 'Google Sheets', 'doc1-name': 'Sales Performance Model (Full Processing)',
+    'doc2-type': 'Presentation Deck', 'doc2-name': 'Commercial Deck Analysis — Pre-Lebaran',
+    'footer-copy': '© 2026 SAILY ROSHINA AYU VIDIANA. ALL RIGHTS RESERVED.',
+    'footer-back': 'BACK TO PORTFOLIO'
+  }
+};
+
+let currentLang = localStorage.getItem('lang') || 'id';
+
+function setLang(lang) {
+  if (lang === currentLang) return;
+  currentLang = lang;
+  localStorage.setItem('lang', lang);
+  document.body.classList.add('lang-switching');
+  setTimeout(() => {
+    applyTranslations(lang);
+    document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('active', b.dataset.lang === lang));
+    document.documentElement.lang = lang;
+    document.body.classList.remove('lang-switching');
+  }, 150);
+}
+
+function applyTranslations(lang) {
+  const t = T[lang];
+  document.querySelectorAll('[data-id]').forEach(el => {
+    const key = el.getAttribute('data-id');
+    if (t[key] !== undefined) el.innerHTML = t[key];
+  });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  applyTranslations(currentLang);
+  document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('active', b.dataset.lang === currentLang));
+  document.documentElement.lang = currentLang;
+});
+</script>
+
+</body>
+</html>
