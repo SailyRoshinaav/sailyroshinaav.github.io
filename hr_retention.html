@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Model Retensi Karyawan Berbasis Data — Saily Roshina</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:      #050810;
+  --bg2:     #080d1a;
+  --bg3:     #0d1526;
+  --border:  rgba(99,210,255,0.12);
+  --border2: rgba(99,210,255,0.25);
+  --cyan:    #63d2ff;
+  --violet:  #b57bff;
+  --green:   #39ff8f;
+  --red:     #ff4d4d;
+  --yellow:  #ffc93c;
+  --text:    #e8edf5;
+  --muted:   #7a8ba8;
+  --mono:    'Space Mono', monospace;
+  --sans:    'Space Grotesk', sans-serif;
+}
+
+html { scroll-behavior: smooth; }
+body { background: var(--bg); color: var(--text); font-family: var(--sans); font-size: 16px; line-height: 1.7; overflow-x: hidden; }
+
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.04) 2px, rgba(0,0,0,0.04) 4px);
+  pointer-events: none; z-index: 999;
+}
+
+.grid-bg {
+  position: fixed; inset: 0;
+  background-image: linear-gradient(rgba(99,210,255,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(99,210,255,0.04) 1px, transparent 1px);
+  background-size: 60px 60px; z-index: 0; pointer-events: none;
+}
+.grid-bg::after { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse 70% 50% at 50% 0%, rgba(99,210,255,0.06) 0%, transparent 70%); }
+
+.orb { position: fixed; border-radius: 50%; filter: blur(80px); pointer-events: none; z-index: 0; opacity: 0.1; }
+.orb-1 { width: 500px; height: 500px; background: var(--cyan); top: -200px; left: -100px; }
+.orb-2 { width: 400px; height: 400px; background: var(--violet); bottom: -150px; right: -100px; }
+
+/* NAV */
+nav {
+  position: fixed; top: 0; left: 0; right: 0;
+  display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+  padding: 1rem clamp(1.5rem, 5vw, 5rem);
+  background: rgba(5,8,16,0.85); backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border); z-index: 100;
+}
+.nav-back {
+  font-family: var(--mono); font-size: 0.7rem; color: var(--muted);
+  text-decoration: none; letter-spacing: 0.1em; display: flex; align-items: center; gap: 0.5rem;
+  transition: color 0.2s;
+}
+.nav-back:hover { color: var(--cyan); }
+.nav-logo { font-family: var(--mono); font-size: 0.8rem; color: var(--cyan); text-decoration: none; letter-spacing: 0.1em; }
+
+.nav-right { display: flex; align-items: center; gap: 1rem; }
+.lang-toggle { display: flex; align-items: center; background: var(--bg3); border: 1px solid var(--border2); border-radius: 2px; overflow: hidden; }
+.lang-btn { font-family: var(--mono); font-size: 0.62rem; font-weight: 700; letter-spacing: 0.1em; padding: 0.3rem 0.75rem; background: transparent; color: var(--muted); border: none; cursor: pointer; transition: all 0.2s; text-transform: uppercase; }
+.lang-btn.active { background: var(--cyan); color: var(--bg); }
+.lang-btn:not(.active):hover { color: var(--cyan); }
+
+/* LAYOUT */
+.wrapper { max-width: 860px; margin: 0 auto; padding: 0 clamp(1.5rem, 5vw, 4rem); position: relative; z-index: 1; }
+
+/* HERO */
+.case-hero {
+  padding-top: 7rem; padding-bottom: 4rem;
+  border-bottom: 1px solid var(--border);
+  position: relative; z-index: 1;
+}
+.case-hero .wrapper { padding-top: 2rem; padding-bottom: 2rem; }
+
+.case-eyebrow {
+  font-family: var(--mono); font-size: 0.68rem; color: var(--violet);
+  letter-spacing: 0.18em; text-transform: uppercase; margin-bottom: 1.25rem;
+  display: flex; align-items: center; gap: 0.6rem;
+  animation: fadeUp 0.6s ease both;
+}
+.case-eyebrow::before { content: '◆'; font-size: 0.45rem; color: var(--violet); }
+
+.case-title {
+  font-size: clamp(2rem, 5vw, 3.5rem); font-weight: 700;
+  line-height: 1.05; letter-spacing: -0.02em; margin-bottom: 1.5rem;
+  animation: fadeUp 0.6s 0.1s ease both;
+}
+
+.case-subtitle {
+  font-family: var(--mono); font-size: 0.8rem; color: var(--cyan);
+  letter-spacing: 0.06em; margin-bottom: 2rem;
+  animation: fadeUp 0.6s 0.15s ease both;
+}
+
+.case-meta {
+  display: flex; flex-wrap: wrap; gap: 2rem; margin-bottom: 2.5rem;
+  animation: fadeUp 0.6s 0.2s ease both;
+}
+.meta-item { display: flex; flex-direction: column; gap: 0.2rem; }
+.meta-label { font-family: var(--mono); font-size: 0.6rem; color: var(--muted); letter-spacing: 0.14em; text-transform: uppercase; }
+.meta-val { font-size: 0.9rem; font-weight: 500; color: var(--text); }
+
+.hero-pills { display: flex; flex-wrap: wrap; gap: 0.5rem; animation: fadeUp 0.6s 0.25s ease both; }
+.pill {
+  font-family: var(--mono); font-size: 0.62rem; color: var(--muted);
+  border: 1px solid var(--border); padding: 0.25rem 0.7rem;
+  border-radius: 2px; letter-spacing: 0.06em; background: rgba(5,8,16,0.5);
+}
+
+.hero-narrative { margin-top: 2.5rem; font-size: 1.05rem; line-height: 1.8; color: var(--muted); }
+.hero-narrative p { margin-bottom: 1rem; }
+.hero-narrative strong { color: var(--text); }
+
+/* DOC BUTTONS */
+.doc-buttons {
+  display: flex; flex-direction: row; flex-wrap: wrap; gap: 1rem; margin-top: 2.5rem;
+  animation: fadeUp 0.6s 0.3s ease both; align-items: center;
+}
+.doc-btn {
+  display: inline-flex; align-items: center; gap: 0.6rem;
+  padding: 0.8rem 1.5rem;
+  font-family: var(--mono); font-size: 0.72rem; font-weight: 700;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  text-decoration: none; border: none; cursor: pointer;
+  transition: all 0.25s; clip-path: polygon(6px 0%, 100% 0%, calc(100% - 6px) 100%, 0% 100%);
+}
+.doc-btn-primary { background: var(--cyan); color: var(--bg); }
+.doc-btn-primary:hover { box-shadow: 0 0 25px rgba(99,210,255,0.45); transform: translateY(-2px); }
+.doc-btn-ghost { background: transparent; color: var(--violet); border: 1px solid rgba(181,123,255,0.35); }
+.doc-btn-ghost:hover { background: rgba(181,123,255,0.06); border-color: var(--violet); box-shadow: 0 0 20px rgba(181,123,255,0.12); transform: translateY(-2px); }
+
+/* KPI STRIP */
+.kpi-strip {
+  background: var(--bg2); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+  position: relative; z-index: 1;
+}
+.kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 1.5px; background: var(--border); }
+.kpi-card { background: var(--bg2); padding: 1.75rem 1.25rem; text-align: center; }
+.kpi-val { font-family: var(--mono); font-size: 1.5rem; font-weight: 700; line-height: 1; margin-bottom: 0.4rem; }
+.kpi-label { font-size: 0.7rem; color: var(--muted); line-height: 1.4; }
+.cyan { color: var(--cyan); text-shadow: 0 0 20px rgba(99,210,255,0.3); }
+.red { color: var(--red); text-shadow: 0 0 20px rgba(255,77,77,0.3); }
+.yellow { color: var(--yellow); text-shadow: 0 0 20px rgba(255,201,60,0.3); }
+.green { color: var(--green); text-shadow: 0 0 20px rgba(57,255,143,0.3); }
+.violet { color: var(--violet); text-shadow: 0 0 20px rgba(181,123,255,0.3); }
+
+/* CONTENT SECTIONS */
+.content-section { padding: 4rem 0; border-bottom: 1px solid var(--border); position: relative; z-index: 1; }
+.content-section:last-child { border-bottom: none; }
+
+.sec-label { font-family: var(--mono); font-size: 0.62rem; color: var(--cyan); letter-spacing: 0.2em; text-transform: uppercase; margin-bottom: 0.5rem; opacity: 0.7; }
+.sec-title { font-size: clamp(1.4rem, 3vw, 2rem); font-weight: 700; letter-spacing: -0.02em; line-height: 1.15; margin-bottom: 1.25rem; }
+.sec-body { color: var(--muted); font-size: 0.95rem; line-height: 1.8; }
+.sec-body p + p { margin-top: 1rem; }
+.sec-body strong { color: var(--text); font-weight: 500; }
+.sec-body ul { padding-left: 1.25rem; margin-top: 0.75rem; margin-bottom: 0.75rem; }
+.sec-body ul li { margin-bottom: 0.35rem; }
+
+/* TWO COL */
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 2.5rem; align-items: start; }
+
+/* ISSUE CARDS */
+.issue-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5px; background: var(--border); border: 1px solid var(--border); margin-top: 2rem; }
+.issue-card { background: var(--bg); padding: 1.5rem; transition: background 0.2s; }
+.issue-card:hover { background: var(--bg3); }
+.issue-num { font-family: var(--mono); font-size: 0.58rem; color: var(--cyan); letter-spacing: 0.2em; margin-bottom: 0.75rem; opacity: 0.6; }
+.issue-title { font-size: 0.95rem; font-weight: 600; margin-bottom: 0.4rem; color: var(--text); }
+.issue-desc { font-size: 0.82rem; color: var(--muted); line-height: 1.55; }
+
+/* BUSINESS QUESTIONS */
+.bq-list { display: flex; flex-direction: column; gap: 1px; background: var(--border); border: 1px solid var(--border); margin-top: 2rem; }
+.bq-item { background: var(--bg2); padding: 1.5rem 2rem; display: flex; gap: 1.25rem; align-items: flex-start; }
+.bq-num { font-family: var(--mono); font-size: 0.65rem; color: var(--cyan); background: rgba(99,210,255,0.08); border: 1px solid var(--border2); width: 28px; height: 28px; border-radius: 2px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 2px; }
+.bq-q { font-size: 0.95rem; font-weight: 600; margin-bottom: 0.3rem; color: var(--text); }
+.bq-purpose { font-size: 0.82rem; color: var(--muted); }
+
+/* METHODOLOGY STEPS */
+.method-steps { display: flex; flex-direction: column; gap: 1.5px; background: var(--border); border: 1px solid var(--border); margin-top: 2rem; }
+.method-step { background: var(--bg); padding: 1.5rem 2rem; display: grid; grid-template-columns: 2rem 1fr; gap: 1rem; align-items: start; transition: background 0.2s; }
+.method-step:hover { background: var(--bg3); }
+.step-num { font-family: var(--mono); font-size: 0.65rem; color: var(--cyan); opacity: 0.6; margin-top: 0.15em; }
+.step-title { font-size: 0.95rem; font-weight: 600; margin-bottom: 0.3rem; color: var(--text); }
+.step-desc { font-size: 0.82rem; color: var(--muted); line-height: 1.55; }
+
+/* DATA SCHEMA STICKER */
+.schema-box { background: var(--bg3); border: 1px solid var(--border); padding: 1.5rem; margin-top: 1.5rem; }
+.schema-title { font-family: var(--mono); font-size: 0.65rem; color: var(--violet); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 0.75rem; }
+.schema-tags { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+.tag-code { font-family: var(--mono); font-size: 0.7rem; background: rgba(5,8,16,0.6); border: 1px solid var(--border); padding: 0.15rem 0.45rem; color: var(--cyan); border-radius: 2px; }
+
+/* FINDINGS */
+.finding-grid { display: flex; flex-direction: column; gap: 1rem; margin-top: 2rem; }
+.finding-card {
+  background: var(--bg2); border: 1px solid var(--border);
+  padding: 1.75rem 2rem;
+  display: grid; grid-template-columns: auto 1fr; gap: 1.25rem; align-items: start;
+  transition: border-color 0.2s;
+}
+.finding-card:hover { border-color: var(--border2); }
+.finding-icon { font-size: 1.5rem; line-height: 1; }
+.finding-label { font-family: var(--mono); font-size: 0.58rem; color: var(--violet); letter-spacing: 0.14em; text-transform: uppercase; margin-bottom: 0.35rem; }
+.finding-title { font-size: 1rem; font-weight: 600; margin-bottom: 0.5rem; color: var(--text); }
+.finding-body { font-size: 0.88rem; color: var(--muted); line-height: 1.65; }
+.finding-body strong { color: var(--text); }
+
+/* RESPONSIVE IFRAME CONTAINER FOR DASHBOARD */
+.dashboard-container {
+  position: relative;
+  width: 100%;
+  padding-top: 56.25%; /* 16:9 Aspect Ratio */
+  margin-top: 1.5rem;
+  border: 1px solid var(--border2);
+  background: var(--bg2);
+  border-radius: 2px;
+}
+.dashboard-container iframe {
+  position: absolute;
+  top: 0; left: 0; bottom: 0; right: 0;
+  width: 100%; height: 100%;
+  border: none;
+}
+
+/* RECOMMENDATION CARDS */
+.rec-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5px; background: var(--border); border: 1px solid var(--border); margin-top: 2rem; }
+.rec-card { background: var(--bg); padding: 2rem; transition: background 0.2s; }
+.rec-card:hover { background: var(--bg3); }
+.rec-num { font-family: var(--mono); font-size: 0.58rem; color: var(--cyan); letter-spacing: 0.2em; margin-bottom: 0.6rem; opacity: 0.6; }
+.rec-title { font-size: 1rem; font-weight: 600; margin-bottom: 0.5rem; color: var(--text); }
+.rec-body { font-size: 0.85rem; color: var(--muted); line-height: 1.65; }
+.rec-body strong { color: var(--text); }
+
+/* DOC SECTION */
+.doc-section { background: var(--bg2); border: 1px solid var(--border); padding: 2.5rem; margin-top: 2rem; }
+.doc-section-title { font-family: var(--mono); font-size: 0.65rem; color: var(--cyan); letter-spacing: 0.18em; text-transform: uppercase; margin-bottom: 1.5rem; opacity: 0.8; }
+.doc-links { display: flex; flex-wrap: wrap; gap: 1rem; }
+.doc-link-card {
+  flex: 1; min-width: 240px;
+  background: var(--bg3); border: 1px solid var(--border);
+  padding: 1.25rem 1.5rem;
+  text-decoration: none; color: inherit;
+  display: flex; align-items: center; gap: 1rem;
+  transition: all 0.25s;
+}
+.doc-link-card:hover { border-color: var(--border2); background: rgba(99,210,255,0.04); transform: translateY(-2px); }
+.doc-link-icon { font-size: 1.4rem; flex-shrink: 0; }
+.doc-link-type { font-family: var(--mono); font-size: 0.58rem; color: var(--muted); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 0.2rem; }
+.doc-link-name { font-size: 0.88rem; font-weight: 500; color: var(--cyan); }
+.doc-link-arrow { margin-left: auto; color: var(--muted); font-size: 1rem; transition: all 0.2s; }
+.doc-link-card:hover .doc-link-arrow { color: var(--cyan); transform: translateX(3px); }
+
+/* FOOTER */
+.case-footer { border-top: 1px solid var(--border); padding: 1.5rem clamp(1.5rem, 5vw, 4rem); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; position: relative; z-index: 1; }
+.footer-copy { font-family: var(--mono); font-size: 0.62rem; color: var(--muted); letter-spacing: 0.08em; }
+.footer-back { font-family: var(--mono); font-size: 0.62rem; color: var(--muted); text-decoration: none; transition: color 0.2s; }
+.footer-back:hover { color: var(--cyan); }
+
+/* LANG TRANSITION */
+[data-id] { transition: opacity 0.15s ease; }
+body.lang-switching [data-id] { opacity: 0; }
+
+/* ANIMATIONS */
+@keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+  .two-col { grid-template-columns: 1fr; gap: 1.5rem; }
+  .rec-grid { grid-template-columns: 1fr; }
+  .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+  .bq-item { flex-direction: column; gap: 0.75rem; }
+}
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+
+<nav>
+  <a href="index.html" class="nav-back">← <span data-id="nav-back">KEMBALI KE PORTFOLIO</span></a>
+  <a href="#" class="nav-logo">SAILY ROSHINA // PORTFOLIO</a>
+  <div class="nav-right">
+    <div class="lang-toggle">
+      <button class="lang-btn active" data-lang="id" onclick="setLang('id')">ID</button>
+      <button class="lang-btn" data-lang="en" onclick="setLang('en')">EN</button>
+    </div>
+  </div>
+</nav>
+
+<header class="case-hero">
+  <div class="wrapper">
+    <div class="case-eyebrow" data-id="hero-eyebrow">HR · Retention · Data Analyst</div>
+    <h1 class="case-title" data-id="case-title">Model Retensi Karyawan Berbasis Data</h1>
+    <div class="case-subtitle" data-id="case-subtitle">TalentHub Indonesia · Analisis Attrition & Retention Strategy</div>
+    
+    <div class="case-meta">
+      <div class="meta-item">
+        <span class="meta-label" data-id="meta-label-1">Perusahaan</span>
+        <span class="meta-val" data-id="meta-val-1">TalentHub Indonesia</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label" data-id="meta-label-2">Industri</span>
+        <span class="meta-val" data-id="meta-val-2">HR Consulting</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label" data-id="meta-label-3">Periode</span>
+        <span class="meta-val" data-id="meta-val-3">Quarterly Review (Simulasi Data HRIS)</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label" data-id="meta-label-4">Tools</span>
+        <span class="meta-val" data-id="meta-val-4">Google Sheets</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label" data-id="meta-label-5">Role</span>
+        <span class="meta-val" data-id="meta-val-5">Data Analyst</span>
+      </div>
+    </div>
+
+    <div class="hero-pills">
+      <span class="pill">HR Analytics</span>
+      <span class="pill">Attrition Analysis</span>
+      <span class="pill">Data Cleaning</span>
+      <span class="pill">Workforce Insight</span>
+      <span class="pill">Business Strategy</span>
+      <span class="pill">Data Visualization</span>
+    </div>
+
+    <div class="hero-narrative">
+      <p data-id="hero-desc-1">Project ini bertujuan untuk mengidentifikasi faktor utama penyebab attrition karyawan dan membantu perusahaan dalam menyusun strategi retensi yang tepat sasaran. Analisis dilakukan dalam konteks consulting, di mana hasil harus tidak hanya akurat tetapi juga dapat dipertanggungjawabkan di hadapan stakeholder tingkat eksekutif.</p>
+      <p data-id="hero-desc-2">Pendekatan mencakup data cleaning, analisis attrition berdasarkan departemen, satisfaction, dan tenure, serta visualisasi untuk mendukung pengambilan keputusan berbasis data. Hasil akhir difokuskan pada actionable insights yang dapat langsung digunakan untuk alokasi budget retensi.</p>
+    </div>
+
+    <div class="doc-buttons">
+      <a href="https://docs.google.com/spreadsheets/d/1XmJDnh8kPybAW5cHWTnjn1M9wP6SglmdlgKsy-JqT4E/edit?usp=sharing" target="_blank" rel="noopener" class="doc-btn doc-btn-primary">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 3c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm7 13H5v-.23c0-.62.28-1.2.76-1.58C7.47 15.82 9.64 15 12 15s4.53.82 6.24 2.19c.48.38.76.97.76 1.58V19z"/></svg>
+        <span data-id="btn-dashboard">Lihat Dashboard</span>
+      </a>
+      <a href="https://canva.link/lzv9hpgao1x3gg7" target="_blank" rel="noopener" class="doc-btn doc-btn-ghost">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+        <span data-id="btn-slides">Lihat Presentasi</span>
+      </a>
+    </div>
+  </div>
+</header>
+
+<section class="kpi-strip">
+  <div class="kpi-grid">
+    <div class="kpi-card">
+      <div class="kpi-val red">19.75%</div>
+      <div class="kpi-label" data-id="kpi-1">Total Attrition Rate</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-val yellow">391 / 1,980</div>
+      <div class="kpi-label" data-id="kpi-2">Total Resign</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-val red">21.1%</div>
+      <div class="kpi-label" data-id="kpi-3">Attrition Tertinggi (Customer Support)</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-val violet">56.1% vs 9.5%</div>
+      <div class="kpi-label" data-id="kpi-4">Gap Satisfaction Attrition</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-val cyan">23.4%</div>
+      <div class="kpi-label" data-id="kpi-5">Peak Attrition (Tenure 2–3 Tahun)</div>
+    </div>
+  </div>
+</section>
+
+<section class="content-section">
+  <div class="wrapper">
+    <div class="sec-label" data-id="sec-label-1">// 01 . Overview</div>
+    <h2 class="sec-title" data-id="sec-title-1">Project Overview & Konteks Bisnis</h2>
+    <div class="sec-body">
+      <p data-id="overview-p1">Project ini berfokus pada analisis attrition karyawan untuk membantu klien TalentHub Indonesia mengidentifikasi area kritis dalam retensi talent. Analisis dilakukan untuk menghasilkan insight yang dapat langsung digunakan dalam pengambilan keputusan strategis terkait alokasi budget retensi.</p>
+      
+      <div class="two-col" style="margin-top: 2rem;">
+        <div>
+          <strong data-id="overview-sub-1">Business Context</strong>
+          <p data-id="overview-sub-p1">Klien TalentHub mengalami peningkatan attrition, khususnya pada talent berkinerja tinggi. Hal ini berdampak langsung pada biaya operasional dan keberlanjutan bisnis.</p>
+        </div>
+        <div>
+          <strong data-id="overview-sub-2">Tantangan Data & Validasi</strong>
+          <p data-id="overview-sub-p3">Data HRIS memiliki missing values, duplikasi, serta interpretasi yang kompleks (misalnya LastPromotionDate kosong bukan berarti error). Validasi data menjadi krusial untuk menjaga kredibilitas analisis.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="content-section">
+  <div class="wrapper">
+    <div class="sec-label" data-id="sec-label-2">// 02 . Problem Statement</div>
+    <h2 class="sec-title" data-id="sec-title-2">Masalah Utama & Dampak Finansial</h2>
+    <div class="sec-body">
+      <p data-id="problem-p1">Analisis ini dipicu oleh kebutuhan untuk mengatasi perputaran karyawan yang tidak terkendali dengan dasar pengambilan keputusan berbasis data yang akurat.</p>
+      
+      <div class="issue-grid">
+        <div class="issue-card">
+          <div class="issue-num">ISSUE_01</div>
+          <div class="issue-title" data-id="issue-t1">Attrition Tinggi pada Talent Kunci</div>
+          <div class="issue-desc" data-id="issue-d1">Perusahaan kehilangan karyawan terbaik tanpa memahami penyebab utamanya.</div>
+        </div>
+        <div class="issue-card">
+          <div class="issue-num">ISSUE_02</div>
+          <div class="issue-title" data-id="issue-t2">Prioritas Retensi Tidak Jelas</div>
+          <div class="issue-desc" data-id="issue-d2">Tidak diketahui departemen mana yang paling membutuhkan intervensi.</div>
+        </div>
+        <div class="issue-card">
+          <div class="issue-num">ISSUE_03</div>
+          <div class="issue-title" data-id="issue-t3">Data HRIS Tidak Bersih</div>
+          <div class="issue-desc" data-id="issue-d3">Data mengandung missing values dan duplikasi yang dapat merusak analisis.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="content-section">
+  <div class="wrapper">
+    <div class="sec-label" data-id="sec-label-3">// 03 . Scope & Questions</div>
+    <h2 class="sec-title" data-id="sec-title-3">Pertanyaan Bisnis & Ruang Lingkup</h2>
+    <div class="sec-body">
+      <p data-id="scope-p1">Fokus dari analisis ini adalah untuk mengupas tuntas dimensi utama dari data karyawan demi menyusun segmentasi risiko yang jelas.</p>
+      
+      <div class="bq-list">
+        <div class="bq-item">
+          <div class="bq-num">?</div>
+          <div>
+            <div class="bq-q" data-id="bq-q1">Departemen mana yang memiliki attrition tertinggi?</div>
+            <div class="bq-purpose" data-id="bq-p1">Tujuan: Menentukan prioritas retensi</div>
+          </div>
+        </div>
+        <div class="bq-item">
+          <div class="bq-num">?</div>
+          <div>
+            <div class="bq-q" data-id="bq-q2">Profil karyawan mana yang paling berisiko resign?</div>
+            <div class="bq-purpose" data-id="bq-p2">Tujuan: Segmentasi risiko</div>
+          </div>
+        </div>
+        <div class="bq-item">
+          <div class="bq-num">?</div>
+          <div>
+            <div class="bq-q" data-id="bq-q3">Faktor apa yang paling mempengaruhi attrition?</div>
+            <div class="bq-purpose" data-id="bq-p3">Tujuan: Menentukan intervensi strategis</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="content-section">
+  <div class="wrapper">
+    <div class="sec-label" data-id="sec-label-4">// 04 . Objectives & Urgency</div>
+    <h2 class="sec-title" data-id="sec-title-4">Tujuan Strategis & Tingkat Urgensi</h2>
+    <div class="sec-body">
+      <p data-id="obj-p1">Tujuan utama analisis ini adalah merumuskan strategi retensi berbasis data untuk menekan angka turnover pada departemen kritis secara efektif dan terukur.</p>
+      <div style="background: rgba(255,77,77,0.05); border: 1px solid rgba(255,77,77,0.2); padding: 1.5rem; margin-top: 1.5rem;">
+        <span style="font-family: var(--mono); font-size: 0.7rem; color: var(--red); display: block; margin-bottom: 0.25rem; font-weight: 700;" data-id="urgency-label">🚨 WHY IT MATTERS NOW</span>
+        <p style="font-size: 0.95rem; margin: 0;" data-id="urgency-text">Kehilangan talent kunci secara terus-menerus berdampak langsung pada penurunan produktivitas tim dan pembengkakan biaya rekrutmen. Intervensi segera diperlukan sebelum siklus pengunduran diri merambat ke karyawan berkinerja tinggi lainnya.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="content-section">
+  <div class="wrapper">
+    <div class="sec-label" data-id="sec-label-5">// 05 . Pipeline Workflow</div>
+    <h2 class="sec-title" data-id="sec-title-5">Arsitektur Data & Alur Kerja Sistem</h2>
+    <div class="sec-body">
+      <p data-id="pipeline-p1">Proses analisis HR ini dirancang dengan serangkaian langkah validasi ketat sebelum menghasilkan model strategi retensi.</p>
+      
+      <div class="method-steps">
+        <div class="method-step">
+          <div class="step-num">01</div>
+          <div>
+            <div class="step-title" data-id="step-t1">Data Cleaning & Validation</div>
+            <div class="step-desc" data-id="step-d1">Membersihkan missing values (Salary, Performance, Satisfaction) dan data duplikat</div>
+          </div>
+        </div>
+        <div class="method-step">
+          <div class="step-num">02</div>
+          <div>
+            <div class="step-title" data-id="step-t2">Attrition Analysis</div>
+            <div class="step-desc" data-id="step-d2">Attrition by Department (total, resigned, rate, ranking), Satisfaction Analysis (grouping & cliff analysis), Tenure Analysis (bucket & peak detection)</div>
+          </div>
+        </div>
+        <div class="method-step">
+          <div class="step-num">03</div>
+          <div>
+            <div class="step-title" data-id="step-t3">Dashboarding & Insight</div>
+            <div class="step-desc" data-id="step-d3">Visualisasi data dan penyusunan rekomendasi strategis</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="schema-box">
+        <div class="schema-title" data-id="schema-title">Data yang Diproses</div>
+        <div class="schema-tags">
+          <span class="tag-code">[EmployeeID]</span><span class="tag-code">[Department]</span><span class="tag-code">[Satisfaction]</span><span class="tag-code">[Tenure]</span><span class="tag-code">[IsResigned]</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="content-section" id="findings">
+  <div class="wrapper">
+    <div class="sec-label" data-id="sec-label-6">// 06 . Executive Summary & Insights</div>
+    <h2 class="sec-title" data-id="sec-title-6">Ringkasan Eksekutif & Temuan Analisis</h2>
+    <div class="sec-body">
+      <p data-id="finding-intro-1">Hasil pengolahan metrik HRIS menunjukkan sinyal peringatan dini yang tersembunyi pada tingkat kepuasan kerja serta masa kerja awal para staf.</p>
+      <p style="color: var(--cyan);" data-id="finding-intro-2">Kesimpulan Utama: Prioritas anggaran dan fokus strategi retensi harus diarahkan pada karyawan berisiko di fase awal masa bakti mereka, dengan pembenahan sistem kepuasan kerja secara menyeluruh.</p>
+
+      <div class="finding-grid">
+        <div class="finding-card">
+          <div class="finding-icon">🚨</div>
+          <div>
+            <div class="finding-label" data-id="f-lbl-1">Temuan 01</div>
+            <div class="finding-title" data-id="f-t1">Customer Support sebagai Departemen Paling Kritis</div>
+            <div class="finding-body" data-id="f-b1">Customer Support memiliki attrition tertinggi (21.1%), sedangkan Engineering terendah (17.1%). Gap ini menunjukkan perbedaan signifikan dalam performa retensi antar departemen.</div>
+          </div>
+        </div>
+        
+        <div class="finding-card">
+          <div class="finding-icon">⭐</div>
+          <div>
+            <div class="finding-label" data-id="f-lbl-2">Temuan 02</div>
+            <div class="finding-title" data-id="f-t2">Satisfaction sebagai Predictor Terkuat</div>
+            <div class="finding-body" data-id="f-b2">Karyawan dengan satisfaction < 3 memiliki attrition 56.1%, dibandingkan 9.5% untuk ≥ 3. Ini menunjukkan gap 6x yang sangat signifikan.</div>
+          </div>
+        </div>
+
+        <div class="finding-card">
+          <div class="finding-icon">⏳</div>
+          <div>
+            <div class="finding-label" data-id="f-lbl-3">Temuan 03</div>
+            <div class="finding-title" data-id="f-t3">Tenure 2–3 Tahun adalah Critical Window</div>
+            <div class="finding-body" data-id="f-b3">Attrition tertinggi terjadi pada tenure 2–3 tahun (23.4%), menunjukkan fase kritis dalam lifecycle karyawan.</div>
+          </div>
+        </div>
+
+        <div class="finding-card">
+          <div class="finding-icon">📉</div>
+          <div>
+            <div class="finding-label" data-id="f-lbl-4">Temuan 04</div>
+            <div class="finding-title" data-id="f-t4">Pola Satisfaction Bersifat Monotonik & Konsisten</div>
+            <div class="finding-body" data-id="f-b4">Semakin rendah satisfaction, semakin tinggi attrition (hingga 75.6% pada score 1). Ini menunjukkan sinyal kuat dan bukan kebetulan data.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="content-section" id="dashboard">
+  <div class="wrapper">
+    <div class="sec-label" data-id="sec-label-embed">// 07 . Dashboard</div>
+    <h2 class="sec-title" data-id="sec-title-embed">Data Visualization</h2>
+    <div class="sec-body">
+      <p data-id="embed-desc">Berikut adalah tampilan visualisasi interaktif dari model retensi tenaga kerja yang dikembangkan:</p>
+      <div class="dashboard-container">
+        <iframe src="https://docs.google.com/spreadsheets/d/e/2PACX-1vShXbTapiWzInkBreD2zTl9-AmD2Zhmr-40sxbE245a4mpHDEwYKj_izbvw1gAtQp7fw4ZlH6uj5Ka5/pubhtml?gid=1329754645&amp;single=true&amp;widget=true&amp;headers=false"></iframe>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="content-section" id="recommendations">
+  <div class="wrapper">
+    <div class="sec-label" data-id="sec-label-7">// 08 . Recommendations</div>
+    <h2 class="sec-title" data-id="sec-title-7">Rekomendasi Aksi Taktikal Bisnis</h2>
+    <div class="sec-body">
+      <p data-id="rec-intro">Berdasarkan temuan data, berikut adalah rekomendasi strategis yang ditujukan bagi pimpinan eksekutif HR dan manajemen puncak:</p>
+      
+      <div class="rec-grid">
+        <div class="rec-card">
+          <div class="rec-num">01</div>
+          <div class="rec-title" data-id="rec-t1">Prioritaskan Retensi di Customer Support</div>
+          <div class="rec-body" data-id="rec-b1">Fokus pada workload, burnout, dan career path untuk menurunkan attrition di departemen ini.</div>
+        </div>
+
+        <div class="rec-card">
+          <div class="rec-num">02</div>
+          <div class="rec-title" data-id="rec-t2">Implementasi Early Warning berbasis Satisfaction</div>
+          <div class="rec-body" data-id="rec-b2">Gunakan threshold satisfaction < 3 sebagai indikator risiko dan lakukan intervensi proaktif.</div>
+        </div>
+
+        <div class="rec-card">
+          <div class="rec-num">03</div>
+          <div class="rec-title" data-id="rec-t3">Fokus Retensi pada Tahun ke-2 Karyawan</div>
+          <div class="rec-body" data-id="rec-b3">Luncurkan program khusus (career review, kompensasi, development) untuk karyawan tenure 2–3 tahun.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="content-section">
+  <div class="wrapper">
+    <div class="doc-section">
+      <div class="doc-section-title" data-id="doc-section-title">// Project Documents & Artefak Analisis</div>
+      <div class="sec-body" style="margin-bottom: 1.5rem;">
+        <p data-id="doc-p">Seluruh proses pengolahan data, model attrition, dan formula pembersihan dirangkum secara detail pada lampiran berikut:</p>
+      </div>
+      <div class="doc-links">
+        <a href="https://docs.google.com/spreadsheets/d/1XmJDnh8kPybAW5cHWTnjn1M9wP6SglmdlgKsy-JqT4E/edit?usp=sharing" target="_blank" rel="noopener" class="doc-link-card">
+          <div class="doc-link-icon">📊</div>
+          <div>
+            <div class="doc-link-type" data-id="doc1-type">Google Sheets</div>
+            <div class="doc-link-name" data-id="doc1-name">HR Retention Model (Full Processing)</div>
+          </div>
+          <div class="doc-link-arrow">→</div>
+        </a>
+        <a href="https://canva.link/lzv9hpgao1x3gg7" target="_blank" rel="noopener" class="doc-link-card">
+          <div class="doc-link-icon">🖥️</div>
+          <div>
+            <div class="doc-link-type" data-id="doc2-type">Presentation Deck</div>
+            <div class="doc-link-name" data-id="doc2-name">Attrition Analysis Deck — Executive Review</div>
+          </div>
+          <div class="doc-link-arrow">→</div>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="case-footer">
+  <div class="footer-copy" data-id="footer-copy">© 2026 SAILY ROSHINA AYU VIDIANA. ALL RIGHTS RESERVED.</div>
+  <a href="index.html" class="footer-back">← <span data-id="footer-back">KEMBALI KE PORTFOLIO</span></a>
+</footer>
+
+<script>
+const T = {
+  id: {
+    'nav-back': 'KEMBALI KE PORTFOLIO',
+    'hero-eyebrow': 'HR · Retention · Data Analyst',
+    'case-title': 'Model Retensi Karyawan Berbasis Data',
+    'case-subtitle': 'TalentHub Indonesia · Analisis Attrition & Retention Strategy',
+    'meta-label-1': 'Perusahaan', 'meta-val-1': 'TalentHub Indonesia',
+    'meta-label-2': 'Industri', 'meta-val-2': 'HR Consulting',
+    'meta-label-3': 'Periode', 'meta-val-3': 'Quarterly Review (Simulasi Data HRIS)',
+    'meta-label-4': 'Tools', 'meta-val-4': 'Google Sheets',
+    'meta-label-5': 'Role', 'meta-val-5': 'Data Analyst',
+    'hero-desc-1': 'Project ini bertujuan untuk mengidentifikasi faktor utama penyebab attrition karyawan dan membantu perusahaan dalam menyusun strategi retensi yang tepat sasaran. Analisis dilakukan dalam konteks consulting, di mana hasil harus tidak hanya akurat tetapi juga dapat dipertanggungjawabkan di hadapan stakeholder tingkat eksekutif.',
+    'hero-desc-2': 'Pendekatan mencakup data cleaning, analisis attrition berdasarkan departemen, satisfaction, dan tenure, serta visualisasi untuk mendukung pengambilan keputusan berbasis data. Hasil akhir difokuskan pada actionable insights yang dapat langsung digunakan untuk alokasi budget retensi.',
+    'btn-dashboard': 'Lihat Dashboard',
+    'btn-slides': 'Lihat Presentasi',
+    'kpi-1': 'Total Attrition Rate', 'kpi-2': 'Total Resign', 'kpi-3': 'Attrition Tertinggi (Customer Support)', 'kpi-4': 'Gap Satisfaction Attrition', 'kpi-5': 'Peak Attrition (Tenure 2–3 Tahun)',
+    'sec-label-1': '// 01 . Overview', 'sec-title-1': 'Project Overview & Konteks Bisnis',
+    'overview-p1': 'Project ini berfokus pada analisis attrition karyawan untuk membantu klien TalentHub Indonesia mengidentifikasi area kritis dalam retensi talent. Analisis dilakukan untuk menghasilkan insight yang dapat langsung digunakan dalam pengambilan keputusan strategis terkait alokasi budget retensi.',
+    'overview-sub-1': 'Business Context',
+    'overview-sub-p1': 'Klien TalentHub mengalami peningkatan attrition, khususnya pada talent berkinerja tinggi. Hal ini berdampak langsung pada biaya operasional dan keberlanjutan bisnis.',
+    'overview-sub-2': 'Tantangan Data & Validasi',
+    'overview-sub-p3': 'Data HRIS memiliki missing values, duplikasi, serta interpretasi yang kompleks (misalnya LastPromotionDate kosong bukan berarti error). Validasi data menjadi krusial untuk menjaga kredibilitas analisis.',
+    'sec-label-2': '// 02 . Problem Statement', 'sec-title-2': 'Masalah Utama & Dampak Finansial',
+    'problem-p1': 'Analisis ini dipicu oleh kebutuhan untuk mengatasi perputaran karyawan yang tidak terkendali dengan dasar pengambilan keputusan berbasis data yang akurat.',
+    'issue-t1': 'Attrition Tinggi pada Talent Kunci', 'issue-d1': 'Perusahaan kehilangan karyawan terbaik tanpa memahami penyebab utamanya.',
+    'issue-t2': 'Prioritas Retensi Tidak Jelas', 'issue-d2': 'Tidak diketahui departemen mana yang paling membutuhkan intervensi.',
+    'issue-t3': 'Data HRIS Tidak Bersih', 'issue-d3': 'Data mengandung missing values dan duplikasi yang dapat merusak analisis.',
+    'sec-label-3': '// 03 . Scope & Questions', 'sec-title-3': 'Pertanyaan Bisnis & Ruang Lingkup',
+    'scope-p1': 'Fokus dari analisis ini adalah untuk mengupas tuntas dimensi utama dari data karyawan demi menyusun segmentasi risiko yang jelas.',
+    'bq-q1': 'Departemen mana yang memiliki attrition tertinggi?', 'bq-p1': 'Tujuan: Menentukan prioritas retensi',
+    'bq-q2': 'Profil karyawan mana yang paling berisiko resign?', 'bq-p2': 'Tujuan: Segmentasi risiko',
+    'bq-q3': 'Faktor apa yang paling mempengaruhi attrition?', 'bq-p3': 'Tujuan: Menentukan intervensi strategis',
+    'sec-label-4': '// 04 . Objectives & Urgency', 'sec-title-4': 'Tujuan Strategis & Tingkat Urgensi',
+    'obj-p1': 'Tujuan utama analisis ini adalah merumuskan strategi retensi berbasis data untuk menekan angka turnover pada departemen kritis secara efektif dan terukur.',
+    'urgency-label': '🚨 WHY IT MATTERS NOW', 'urgency-text': 'Kehilangan talent kunci secara terus-menerus berdampak langsung pada penurunan produktivitas tim dan pembengkakan biaya rekrutmen. Intervensi segera diperlukan sebelum siklus pengunduran diri merambat ke karyawan berkinerja tinggi lainnya.',
+    'sec-label-5': '// 05 . Pipeline Workflow', 'sec-title-5': 'Arsitektur Data & Alur Kerja Sistem',
+    'pipeline-p1': 'Proses analisis HR ini dirancang dengan serangkaian langkah validasi ketat sebelum menghasilkan model strategi retensi.',
+    'step-t1': 'Data Cleaning & Validation', 'step-d1': 'Membersihkan missing values (Salary, Performance, Satisfaction) dan data duplikat',
+    'step-t2': 'Attrition Analysis', 'step-d2': 'Attrition by Department (total, resigned, rate, ranking), Satisfaction Analysis (grouping & cliff analysis), Tenure Analysis (bucket & peak detection)',
+    'step-t3': 'Dashboarding & Insight', 'step-d3': 'Visualisasi data dan penyusunan rekomendasi strategis',
+    'schema-title': 'Data yang Diproses',
+    'sec-label-6': '// 06 . Executive Summary & Insights', 'sec-title-6': 'Ringkasan Eksekutif & Temuan Analisis',
+    'finding-intro-1': 'Hasil pengolahan metrik HRIS menunjukkan sinyal peringatan dini yang tersembunyi pada tingkat kepuasan kerja serta masa kerja awal para staf.',
+    'finding-intro-2': 'Kesimpulan Utama: Prioritas anggaran dan fokus strategi retensi harus diarahkan pada karyawan berisiko di fase awal masa bakti mereka, dengan pembenahan sistem kepuasan kerja secara menyeluruh.',
+    'f-lbl-1': 'Temuan 01', 'f-t1': 'Customer Support sebagai Departemen Paling Kritis', 'f-b1': 'Customer Support memiliki attrition tertinggi (21.1%), sedangkan Engineering terendah (17.1%). Gap ini menunjukkan perbedaan signifikan dalam performa retensi antar departemen.',
+    'f-lbl-2': 'Temuan 02', 'f-t2': 'Satisfaction sebagai Predictor Terkuat', 'f-b2': 'Karyawan dengan satisfaction < 3 memiliki attrition 56.1%, dibandingkan 9.5% untuk ≥ 3. Ini menunjukkan gap 6x yang sangat signifikan.',
+    'f-lbl-3': 'Temuan 03', 'f-t3': 'Tenure 2–3 Tahun adalah Critical Window', 'f-b3': 'Attrition tertinggi terjadi pada tenure 2–3 tahun (23.4%), menunjukkan fase kritis dalam lifecycle karyawan.',
+    'f-lbl-4': 'Temuan 04', 'f-t4': 'Pola Satisfaction Bersifat Monotonik & Konsisten', 'f-b4': 'Semakin rendah satisfaction, semakin tinggi attrition (hingga 75.6% pada score 1). Ini menunjukkan sinyal kuat dan bukan kebetulan data.',
+    'sec-label-embed': '// 07 . Dashboard', 'sec-title-embed': 'Data Visualization',
+    'embed-desc': 'Berikut adalah tampilan visualisasi interaktif dari model retensi tenaga kerja yang dikembangkan:',
+    'sec-label-7': '// 08 . Recommendations', 'sec-title-7': 'Rekomendasi Aksi Taktikal Bisnis',
+    'rec-intro': 'Berdasarkan temuan data, berikut adalah rekomendasi strategis yang ditujukan bagi pimpinan eksekutif HR dan manajemen puncak:',
+    'rec-t1': 'Prioritaskan Retensi di Customer Support', 'rec-b1': 'Fokus pada workload, burnout, dan career path untuk menurunkan attrition di departemen ini.',
+    'rec-t2': 'Implementasi Early Warning berbasis Satisfaction', 'rec-b2': 'Gunakan threshold satisfaction < 3 sebagai indikator risiko dan lakukan intervensi proaktif.',
+    'rec-t3': 'Fokus Retensi pada Tahun ke-2 Karyawan', 'rec-b3': 'Luncurkan program khusus (career review, kompensasi, development) untuk karyawan tenure 2–3 tahun.',
+    'doc-section-title': '// Project Documents & Artefak Analisis',
+    'doc-p': 'Seluruh proses pengolahan data, model attrition, dan formula pembersihan dirangkum secara detail pada lampiran berikut:',
+    'doc1-type': 'Google Sheets', 'doc1-name': 'HR Retention Model (Full Processing)',
+    'doc2-type': 'Presentation Deck', 'doc2-name': 'Attrition Analysis Deck — Executive Review',
+    'footer-copy': '© 2026 SAILY ROSHINA AYU VIDIANA. ALL RIGHTS RESERVED.',
+    'footer-back': 'KEMBALI KE PORTFOLIO'
+  },
+  en: {
+    'nav-back': 'BACK TO PORTFOLIO',
+    'hero-eyebrow': 'HR · Retention · Data Analyst',
+    'case-title': 'Data-Driven Employee Retention Model',
+    'case-subtitle': 'TalentHub Indonesia · Attrition Analysis & Retention Strategy',
+    'meta-label-1': 'Company', 'meta-val-1': 'TalentHub Indonesia',
+    'meta-label-2': 'Industry', 'meta-val-2': 'HR Consulting',
+    'meta-label-3': 'Period', 'meta-val-3': 'Quarterly Review (HRIS Data Simulation)',
+    'meta-label-4': 'Tools', 'meta-val-4': 'Google Sheets',
+    'meta-label-5': 'Role', 'meta-val-5': 'Data Analyst',
+    'hero-desc-1': 'This project aims to identify key drivers of employee attrition and support the development of targeted retention strategies. The analysis is conducted in a consulting context, where outputs must be both accurate and defensible at an executive level.',
+    'hero-desc-2': 'The approach includes data cleaning, attrition analysis by department, satisfaction, and tenure, along with visualization to support data-driven decisions. The final output focuses on actionable insights for retention budget allocation.',
+    'btn-dashboard': 'View Dashboard',
+    'btn-slides': 'View Presentation',
+    'kpi-1': 'Overall Attrition Rate', 'kpi-2': 'Total Resigned Employees', 'kpi-3': 'Highest Attrition (Customer Support)', 'kpi-4': 'Attrition Gap by Satisfaction', 'kpi-5': 'Peak Attrition (2–3 Years Tenure)',
+    'sec-label-1': '// 01 . Overview', 'sec-title-1': 'Project Overview & Business Context',
+    'overview-p1': 'This project focuses on employee attrition analysis to help TalentHub Indonesia’s clients identify critical retention issues. The analysis aims to produce insights that can directly support strategic retention budget allocation.',
+    'overview-sub-1': 'Business Context',
+    'overview-sub-p1': 'TalentHub clients are experiencing increasing attrition, particularly among high-performing employees, directly impacting operational costs and business sustainability.',
+    'overview-sub-2': 'Data & Validation Challenges',
+    'overview-sub-p3': 'HRIS data contains missing values, duplicates, and complex interpretations (e.g., empty LastPromotionDate is not an error). Data validation is critical to ensure analysis credibility.',
+    'sec-label-2': '// 02 . Problem Statement', 'sec-title-2': 'Core Problems & Financial Impact',
+    'problem-p1': 'This analysis is triggered by the need to tackle uncontrolled employee turnover with accurate data-driven decisions.',
+    'issue-t1': 'High Attrition Among Key Talent', 'issue-d1': 'The company is losing top talent without understanding the root causes.',
+    'issue-t2': 'Unclear Retention Priorities', 'issue-d2': 'It is unclear which departments require the most urgent retention efforts.',
+    'issue-t3': 'Messy HRIS Data', 'issue-d3': 'Data contains missing values and duplicates that may compromise analysis.',
+    'sec-label-3': '// 03 . Scope & Questions', 'sec-title-3': 'Business Questions & Analytical Scope',
+    'scope-p1': 'The focus of this analysis is to dissect core dimensions of employee data to construct clear risk segmentation.',
+    'bq-q1': 'Which department has the highest attrition rate?', 'bq-p1': 'Goal: Determine retention priorities',
+    'bq-q2': 'Which employee profiles are most at risk?', 'bq-p2': 'Goal: Risk segmentation',
+    'bq-q3': 'What factors drive attrition the most?', 'bq-p3': 'Goal: Define strategic interventions',
+    'sec-label-4': '// 04 . Objectives & Urgency', 'sec-title-4': 'Strategic Objectives & Urgency Level',
+    'obj-p1': 'The main objective of this analysis is to formulate a data-driven retention strategy to reduce turnover in critical departments effectively and measurably.',
+    'urgency-label': '🚨 WHY IT MATTERS NOW', 'urgency-text': 'The continuous loss of key talent directly impacts team productivity and inflates recruitment costs. Immediate intervention is required before a mass resignation cycle affects other high-performing employees.',
+    'sec-label-5': '// 05 . Pipeline Workflow', 'sec-title-5': 'Data Architecture & System Workflow',
+    'pipeline-p1': 'This HR analysis process is designed with strict validation steps before finalizing the retention strategy model.',
+    'step-t1': 'Data Cleaning & Validation', 'step-d1': 'Cleaning missing values (Salary, Performance, Satisfaction) and duplicates',
+    'step-t2': 'Attrition Analysis', 'step-d2': 'Attrition by Department, Satisfaction-based analysis, Tenure-based analysis',
+    'step-t3': 'Dashboarding & Insight', 'step-d3': 'Visualization and strategic insights',
+    'schema-title': 'Processed Data',
+    'sec-label-6': '// 06 . Executive Summary & Insights', 'sec-title-6': 'Executive Summary & Analytical Insights',
+    'finding-intro-1': 'HRIS metric processing reveals hidden early warning signals within job satisfaction levels and early tenure periods.',
+    'finding-intro-2': 'Core Conclusion: Budget priority and retention strategy focus must be directed toward at-risk employees in their early tenure phases, alongside comprehensive overhauls to the job satisfaction system.',
+    'f-lbl-1': 'Insight 01', 'f-t1': 'Customer Support as the Most Critical Department', 'f-b1': 'Customer Support has the highest attrition (21.1%), while Engineering has the lowest (17.1%), indicating significant retention performance differences.',
+    'f-lbl-2': 'Insight 02', 'f-t2': 'Satisfaction as the Strongest Predictor', 'f-b2': 'Employees with satisfaction < 3 have a 56.1% attrition rate vs. 9.5% for ≥ 3, indicating a 6x difference.',
+    'f-lbl-3': 'Insight 03', 'f-t3': '2–3 Years Tenure as Critical Window', 'f-b3': 'The highest attrition occurs at 2–3 years tenure (23.4%), marking a critical lifecycle phase.',
+    'f-lbl-4': 'Insight 04', 'f-t4': 'Monotonic Satisfaction Pattern', 'f-b4': 'Lower satisfaction consistently leads to higher attrition (up to 75.6% at score 1), indicating a strong and reliable signal.',
+    'sec-label-embed': '// 07 . Dashboard', 'sec-title-embed': 'Data Visualization',
+    'embed-desc': 'Below is the interactive visualization embedded directly from the workforce retention model:',
+    'sec-label-7': '// 08 . Recommendations', 'sec-title-7': 'Tactical Business Action Recommendations',
+    'rec-intro': 'Based on the findings, the following strategic recommendations are directed at HR executives and top management:',
+    'rec-t1': 'Prioritize Retention in Customer Support', 'rec-b1': 'Focus on workload, burnout, and career path improvements to reduce attrition.',
+    'rec-t2': 'Implement Satisfaction-Based Early Warning', 'rec-b2': 'Use satisfaction < 3 as a risk indicator and implement proactive interventions.',
+    'rec-t3': 'Focus Retention on Year-2 Employees', 'rec-b3': 'Launch targeted programs (career review, compensation, development) for employees in 2–3 years tenure.',
+    'doc-section-title': '// Project Documents & Analysis Artifacts',
+    'doc-p': 'The entire data processing workflow, attrition model, and cleansing formulas are comprehensively detailed in the attachments below:',
+    'doc1-type': 'Google Sheets', 'doc1-name': 'HR Retention Model (Full Processing)',
+    'doc2-type': 'Presentation Deck', 'doc2-name': 'Attrition Analysis Deck — Executive Review',
+    'footer-copy': '© 2026 SAILY ROSHINA AYU VIDIANA. ALL RIGHTS RESERVED.',
+    'footer-back': 'BACK TO PORTFOLIO'
+  }
+};
+
+let currentLang = localStorage.getItem('lang') || 'id';
+
+function setLang(lang) {
+  if (lang === currentLang) return;
+  currentLang = lang;
+  localStorage.setItem('lang', lang);
+  document.body.classList.add('lang-switching');
+  setTimeout(() => {
+    applyTranslations(lang);
+    document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('active', b.dataset.lang === lang));
+    document.documentElement.lang = lang;
+    document.body.classList.remove('lang-switching');
+  }, 150);
+}
+
+function applyTranslations(lang) {
+  const t = T[lang];
+  document.querySelectorAll('[data-id]').forEach(el => {
+    const key = el.getAttribute('data-id');
+    if (t[key] !== undefined) el.innerHTML = t[key];
+  });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  applyTranslations(currentLang);
+  document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('active', b.dataset.lang === currentLang));
+  document.documentElement.lang = currentLang;
+});
+</script>
+
+</body>
+</html>
